@@ -1,154 +1,223 @@
 /**
- * Super Encryption Pipeline
- * Chaining 4 cipher layers:
- * Layer 1: Caesar Cipher (Substitution)
- * Layer 2: Vigenere Cipher (Polyalphabetic)
- * Layer 3: Bitwise XOR Stream (Modern Bit-level)
- * Layer 4: AES-GCM Block Cipher (Modern Standard)
+ * Menu 5: Super Enkripsi (Multi-Layered Cryptosystem)
+ * Alur Pipeline Berurutan Estafet 4 Lapisan:
+ * Layer 1: Vigenère Cipher (Substitusi Polialfabetik Klasik)
+ * Layer 2: Rail Fence Cipher (Transposisi Zig-Zag Klasik)
+ * Layer 3: Rijndael / AES-256 (Kunci Simetri Modern)
+ * Layer 4: Kunci Publik / RSA-OAEP 2048-bit (Kunci Nirsimetri Modern)
  */
 
-import { caesarCipher } from './classical';
-import { vigenereCipher } from './classical';
-import { xorCipher, xorDecryptHex, aesEncrypt, aesDecrypt } from './modern';
+import { encryptVigenere, decryptVigenere } from './vigenere';
+import { encryptRailFence, decryptRailFence } from './rail-fence';
+import { encryptRijndael, decryptRijndael } from './rijndael';
+import { encryptRsa, decryptRsa } from './rsa';
 
 export interface SuperKeys {
-  caesarShift: number;
   vigenereKey: string;
-  xorKey: string;
-  aesKey: string;
+  railFenceRails: number;
+  rijndaelKey: string;
+  rsaPublicKeyPem: string;
+  rsaPrivateKeyPem?: string;
 }
 
-export interface PipelineStage {
+export interface DetailedStageMetadata {
+  formula?: string;
+  railMatrix?: string[][];
+  ivHex?: string;
+  authTagHex?: string;
+  rsaChunksCount?: number;
+  extraInfo?: string;
+}
+
+export interface PipelineStageInfo {
   stage: number;
   name: string;
-  type: string;
+  category: 'Substitusi Klasik' | 'Transposisi Klasik' | 'Simetri Modern' | 'Nirsimetri Modern';
   input: string;
   output: string;
   keyUsed: string;
   description: string;
+  metadata?: DetailedStageMetadata;
 }
 
 export interface SuperEncryptionResult {
   finalCiphertext: string;
-  stages: PipelineStage[];
+  stages: PipelineStageInfo[];
 }
 
-export async function superEncrypt(
+export interface SuperDecryptionResult {
+  recoveredPlaintext: string;
+  stages: PipelineStageInfo[];
+}
+
+/**
+ * Enkripsi Estafet 4-Lapisan Super Cryptosystem
+ */
+export async function superEncryptPipeline(
   plainText: string,
   keys: SuperKeys
 ): Promise<SuperEncryptionResult> {
-  const stages: PipelineStage[] = [];
+  const stages: PipelineStageInfo[] = [];
 
-  // Stage 1: Caesar
-  const s1 = caesarCipher(plainText, keys.caesarShift, 'encrypt');
+  // Stage 1: Vigenère Cipher (Substitusi Klasik)
+  const s1 = encryptVigenere(plainText, keys.vigenereKey || 'KUNCI');
   stages.push({
     stage: 1,
-    name: 'Caesar Cipher',
-    type: 'Classical Substitution',
+    name: 'Vigenère Cipher',
+    category: 'Substitusi Klasik',
     input: plainText,
     output: s1.result,
-    keyUsed: `Shift = ${keys.caesarShift}`,
-    description: `Shifted each alphabet character by ${keys.caesarShift} positions.`,
+    keyUsed: `Kata Kunci: "${s1.cleanKey}"`,
+    description: `Menggeser alfabet plaintext secara polialfabetik berdasarkan kunci "${s1.cleanKey}".`,
+    metadata: {
+      formula: s1.formula,
+      extraInfo: `${s1.steps.length} Karakter diproses modular 26.`,
+    },
   });
 
-  // Stage 2: Vigenere
-  const s2 = vigenereCipher(s1.result, keys.vigenereKey, 'encrypt');
+  // Stage 2: Rail Fence Cipher (Transposisi Klasik)
+  const railsCount = Math.max(2, keys.railFenceRails || 3);
+  const s2 = encryptRailFence(s1.result, railsCount);
   stages.push({
     stage: 2,
-    name: 'Vigenere Cipher',
-    type: 'Polyalphabetic Substitution',
+    name: 'Rail Fence Cipher',
+    category: 'Transposisi Klasik',
     input: s1.result,
     output: s2.result,
-    keyUsed: `Key = "${keys.vigenereKey}"`,
-    description: `Applied polyalphabetic shift using repeating keyword "${keys.vigenereKey}".`,
+    keyUsed: `Kedalaman Rel (k): ${railsCount}`,
+    description: `Menyusun karakter secara zig-zag pada ${railsCount} rel dan membaca baris per baris.`,
+    metadata: {
+      formula: s2.formula,
+      railMatrix: s2.matrix,
+      extraInfo: `${s2.railSequences.length} Rel horizontal dibaca baris demi baris.`,
+    },
   });
 
-  // Stage 3: Bitwise XOR
-  const s3 = xorCipher(s2.result, keys.xorKey);
+  // Stage 3: Rijndael / AES-256 (Simetri Modern)
+  const s3 = await encryptRijndael(s2.result, keys.rijndaelKey || 'AES_SECRET_KEY');
   stages.push({
     stage: 3,
-    name: 'Bitwise XOR Stream',
-    type: 'Modern Bitwise',
+    name: 'Rijndael / AES-256',
+    category: 'Simetri Modern',
     input: s2.result,
-    output: s3.result, // Hex formatted
-    keyUsed: `XOR Key = "${keys.xorKey}"`,
-    description: `Transformed characters into bytes and performed bitwise XOR with key stream.`,
+    output: s3.ciphertextBase64,
+    keyUsed: `Passphrase: "${keys.rijndaelKey}" (Derived via SHA-256)`,
+    description: `Mengenkripsi ciphertext transposisi dengan AES-256-GCM terotentikasi & 96-bit IV.`,
+    metadata: {
+      ivHex: s3.ivHex,
+      authTagHex: s3.authTagHex,
+      extraInfo: `14 Putaran Rijndael SPN (SubBytes, ShiftRows, MixColumns, AddRoundKey).`,
+    },
   });
 
-  // Stage 4: AES-GCM
-  const s4 = await aesEncrypt(s3.result, keys.aesKey);
+  // Stage 4: Kunci Publik / RSA-OAEP (Nirsimetri Modern)
+  if (!keys.rsaPublicKeyPem || !keys.rsaPublicKeyPem.includes('PUBLIC KEY')) {
+    throw new Error('Kunci Publik RSA (PEM) diperlukan untuk menyelesaikan tahap ke-4.');
+  }
+
+  const s4 = await encryptRsa(s3.ciphertextBase64, keys.rsaPublicKeyPem);
   stages.push({
     stage: 4,
-    name: 'AES-256 GCM',
-    type: 'Modern Block Cipher',
-    input: s3.result,
-    output: s4,
-    keyUsed: `AES Key = "${keys.aesKey}"`,
-    description: `Encrypted the hex stream using authenticated AES-GCM with 96-bit IV.`,
+    name: 'Kunci Publik RSA-OAEP',
+    category: 'Nirsimetri Modern',
+    input: s3.ciphertextBase64,
+    output: s4.ciphertextBase64,
+    keyUsed: 'Kunci Publik RSA-OAEP 2048-bit (PEM)',
+    description: `Mengamankan payload AES menggunakan Kunci Publik asimetris berstandar RSA-OAEP 2048-bit.`,
+    metadata: {
+      rsaChunksCount: s4.chunksCount,
+      formula: 'C_i = (M_i)^e mod n (e = 65537)',
+      extraInfo: `${s4.chunksCount} Blok RSA dipad dengan OAEP SHA-256.`,
+    },
   });
 
   return {
-    finalCiphertext: s4,
+    finalCiphertext: s4.ciphertextBase64,
     stages,
   };
 }
 
-export async function superDecrypt(
-  cipherText: string,
+/**
+ * Dekripsi Estafet Terbalik Super Cryptosystem
+ */
+export async function superDecryptPipeline(
+  superCiphertext: string,
   keys: SuperKeys
-): Promise<SuperEncryptionResult> {
-  const stages: PipelineStage[] = [];
+): Promise<SuperDecryptionResult> {
+  const stages: PipelineStageInfo[] = [];
 
-  // Stage 1: AES-GCM Decrypt
-  const s1 = await aesDecrypt(cipherText, keys.aesKey);
+  // Stage 1: RSA Decrypt (Nirsimetri Modern)
+  if (!keys.rsaPrivateKeyPem || !keys.rsaPrivateKeyPem.includes('PRIVATE KEY')) {
+    throw new Error('Kunci Privat RSA (PEM) diperlukan untuk mendekripsi tahap ke-1.');
+  }
+
+  const s1 = await decryptRsa(superCiphertext, keys.rsaPrivateKeyPem);
   stages.push({
     stage: 1,
-    name: 'AES-256 GCM Decrypt',
-    type: 'Modern Block Cipher',
-    input: cipherText,
-    output: s1,
-    keyUsed: `AES Key = "${keys.aesKey}"`,
-    description: `Decrypted AES payload and verified GCM authentication tag.`,
+    name: 'RSA-OAEP Decrypt',
+    category: 'Nirsimetri Modern',
+    input: superCiphertext,
+    output: s1.plaintext,
+    keyUsed: 'Kunci Privat RSA-OAEP 2048-bit (PEM)',
+    description: `Mendekripsi lapisan asimetris RSA untuk memperoleh ciphertext AES terotentikasi.`,
+    metadata: {
+      rsaChunksCount: s1.chunksCount,
+      formula: 'M_i = (C_i)^d mod n',
+      extraInfo: `Berhasil memulihkan ${s1.chunksCount} blok RSA ke payload AES.`,
+    },
   });
 
-  // Stage 2: XOR Decrypt
-  const s2 = xorDecryptHex(s1, keys.xorKey);
+  // Stage 2: Rijndael / AES-256 Decrypt (Simetri Modern)
+  const s2 = await decryptRijndael(s1.plaintext, keys.rijndaelKey || 'AES_SECRET_KEY');
   stages.push({
     stage: 2,
-    name: 'Bitwise XOR Reverse',
-    type: 'Modern Bitwise',
-    input: s1,
+    name: 'Rijndael / AES-256 Decrypt',
+    category: 'Simetri Modern',
+    input: s1.plaintext,
     output: s2,
-    keyUsed: `XOR Key = "${keys.xorKey}"`,
-    description: `Reversed bitwise XOR operation using keystream.`,
+    keyUsed: `Passphrase: "${keys.rijndaelKey}"`,
+    description: `Mendekripsi AES-256-GCM dan memverifikasi integritas autentikasi untuk memulihkan teks transposisi.`,
+    metadata: {
+      extraInfo: 'Tag GMAC 128-bit terverifikasi valid, kunci simetris cocok.',
+    },
   });
 
-  // Stage 3: Vigenere Decrypt
-  const s3 = vigenereCipher(s2, keys.vigenereKey, 'decrypt');
+  // Stage 3: Rail Fence Decrypt (Transposisi Klasik)
+  const railsCount = Math.max(2, keys.railFenceRails || 3);
+  const s3 = decryptRailFence(s2, railsCount);
   stages.push({
     stage: 3,
-    name: 'Vigenere Decrypt',
-    type: 'Polyalphabetic Substitution',
+    name: 'Rail Fence Decrypt',
+    category: 'Transposisi Klasik',
     input: s2,
     output: s3.result,
-    keyUsed: `Key = "${keys.vigenereKey}"`,
-    description: `Reversed Vigenere polyalphabetic shift.`,
+    keyUsed: `Kedalaman Rel (k): ${railsCount}`,
+    description: `Merekonstruksi posisi matriks zig-zag ${railsCount} rel untuk memulihkan urutan asli Vigenère.`,
+    metadata: {
+      formula: s3.formula,
+      railMatrix: s3.matrix,
+      extraInfo: `Rekonstruksi zig-zag diagonal ${railsCount} rel berhasil.`,
+    },
   });
 
-  // Stage 4: Caesar Decrypt
-  const s4 = caesarCipher(s3.result, keys.caesarShift, 'decrypt');
+  // Stage 4: Vigenère Decrypt (Substitusi Klasik)
+  const s4 = decryptVigenere(s3.result, keys.vigenereKey || 'KUNCI');
   stages.push({
     stage: 4,
-    name: 'Caesar Decrypt',
-    type: 'Classical Substitution',
+    name: 'Vigenère Decrypt',
+    category: 'Substitusi Klasik',
     input: s3.result,
     output: s4.result,
-    keyUsed: `Shift = ${keys.caesarShift}`,
-    description: `Reversed Caesar shift by -${keys.caesarShift} to recover original plaintext.`,
+    keyUsed: `Kata Kunci: "${s4.cleanKey}"`,
+    description: `Membalikkan pergeseran substitusi Vigenère untuk meregenerasi plaintext asli 100%.`,
+    metadata: {
+      formula: s4.formula,
+      extraInfo: 'Pergeseran modular dibalikkan (-K mod 26) ke teks asli.',
+    },
   });
 
   return {
-    finalCiphertext: s4.result,
+    recoveredPlaintext: s4.result,
     stages,
   };
 }

@@ -3,13 +3,20 @@
 import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Shield, Lock, FileText, Image as ImageIcon, Activity, Home } from 'lucide-react';
+import {
+  Shield,
+  Home,
+  FileCode2,
+  Grid,
+  Lock,
+  KeyRound,
+  Layers,
+} from 'lucide-react';
 
 interface MobileShellProps {
   children: React.ReactNode;
   title?: string;
   subtitle?: string;
-  showBack?: boolean;
 }
 
 export default function MobileShell({
@@ -21,15 +28,16 @@ export default function MobileShell({
   const isLoginPage = pathname === '/login';
 
   const navItems = [
-    { href: '/dashboard', label: 'Home', icon: Home },
-    { href: '/text-crypto', label: 'Teks', icon: Lock },
-    { href: '/image-steganography', label: 'Gambar', icon: ImageIcon },
-    { href: '/file-crypto', label: 'Berkas', icon: FileText },
-    { href: '/tracing', label: 'Tracing', icon: Activity },
+    { href: '/dashboard', label: 'Hub', icon: Home },
+    { href: '/vigenere', label: 'Vigenère', icon: FileCode2 },
+    { href: '/rail-fence', label: 'Rail Fence', icon: Grid },
+    { href: '/rijndael', label: 'Rijndael', icon: Lock },
+    { href: '/rsa', label: 'RSA', icon: KeyRound },
+    { href: '/super-encryption', label: 'Super', icon: Layers },
   ];
 
   return (
-    <div className="w-full max-w-lg min-h-screen bg-slate-900 border-x border-slate-800 flex flex-col shadow-2xl relative pb-20">
+    <div className="w-full max-w-lg min-h-screen bg-slate-900 border-x border-slate-800 flex flex-col shadow-2xl relative pb-20 mx-auto">
       {/* Top Header */}
       {!isLoginPage && (
         <header className="sticky top-0 z-40 bg-slate-900/90 backdrop-blur-md border-b border-slate-800 px-4 py-3 flex items-center justify-between">
@@ -42,13 +50,13 @@ export default function MobileShell({
                 {title || 'Crypto Solver'}
               </h1>
               <p className="text-xs text-cyan-400/90 font-medium">
-                {subtitle || 'Security & Educational System'}
+                {subtitle || 'Text Cryptography Suite'}
               </p>
             </div>
           </div>
           <div className="flex items-center space-x-2">
             <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
-            <span className="text-[11px] font-mono text-emerald-400 uppercase tracking-wider">Online</span>
+            <span className="text-[11px] font-mono text-emerald-400 uppercase tracking-wider">Client-Safe</span>
           </div>
         </header>
       )}
@@ -60,7 +68,7 @@ export default function MobileShell({
 
       {/* Mobile Bottom Navigation Bar */}
       {!isLoginPage && (
-        <nav className="fixed bottom-0 left-0 right-0 max-w-lg mx-auto bg-slate-950/95 backdrop-blur-lg border-t border-slate-800 px-3 py-2 z-50 flex justify-around items-center">
+        <nav className="fixed bottom-0 left-0 right-0 max-w-lg mx-auto bg-slate-950/95 backdrop-blur-lg border-t border-slate-800 px-2 py-1.5 z-50 flex justify-around items-center">
           {navItems.map((item) => {
             const Icon = item.icon;
             const isActive = pathname === item.href;
@@ -68,7 +76,7 @@ export default function MobileShell({
               <Link
                 key={item.href}
                 href={item.href}
-                className={`flex flex-col items-center justify-center py-1 px-2 rounded-xl transition-all duration-200 ${
+                className={`flex flex-col items-center justify-center py-1 px-1.5 rounded-xl transition-all duration-200 ${
                   isActive
                     ? 'text-cyan-400 scale-105 font-medium'
                     : 'text-slate-400 hover:text-slate-200'
@@ -79,9 +87,9 @@ export default function MobileShell({
                     isActive ? 'bg-cyan-500/15 ring-1 ring-cyan-500/30' : ''
                   }`}
                 >
-                  <Icon className="w-5 h-5" />
+                  <Icon className="w-4 h-4" />
                 </div>
-                <span className="text-[10px] mt-0.5">{item.label}</span>
+                <span className="text-[9px] mt-0.5 tracking-tight">{item.label}</span>
               </Link>
             );
           })}
