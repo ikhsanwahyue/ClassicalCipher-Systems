@@ -7,12 +7,7 @@ export default function RootPage() {
   const router = useRouter();
 
   useEffect(() => {
-    const authUser = localStorage.getItem('crypto_auth_user');
-    if (authUser) {
-      router.replace('/dashboard');
-    } else {
-      router.replace('/login');
-    }
+    router.replace('/vigenere');
   }, [router]);
 
   return (

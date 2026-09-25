@@ -1,8 +1,3 @@
-/**
- * Menu 1: Vigenère Cipher (Substitusi Polialfabetik Klasik)
- * Mendukung enkripsi, dekripsi, normalisasi kunci, serta tracing langkah-demi-langkah.
- */
-
 export interface VigenereTraceStep {
   index: number;
   plainChar: string;
@@ -22,9 +17,6 @@ export interface VigenereResult {
   formula: string;
 }
 
-/**
- * Enkripsi Vigenère Cipher: C_i = (P_i + K_i) mod 26
- */
 export function encryptVigenere(text: string, key: string): VigenereResult {
   const cleanKey = (key || 'KEY').toUpperCase().replace(/[^A-Z]/g, '') || 'KEY';
   const steps: VigenereTraceStep[] = [];
@@ -36,7 +28,6 @@ export function encryptVigenere(text: string, key: string): VigenereResult {
     const code = char.charCodeAt(0);
 
     if (code >= 65 && code <= 90) {
-      // Huruf Besar A-Z (ASCII 65-90)
       const p = code - 65;
       const kChar = cleanKey[keyIndex % cleanKey.length];
       const k = kChar.charCodeAt(0) - 65;
@@ -56,7 +47,6 @@ export function encryptVigenere(text: string, key: string): VigenereResult {
       });
       keyIndex++;
     } else if (code >= 97 && code <= 122) {
-      // Huruf Kecil a-z (ASCII 97-122)
       const p = code - 97;
       const kChar = cleanKey[keyIndex % cleanKey.length];
       const k = kChar.charCodeAt(0) - 65;
@@ -76,7 +66,6 @@ export function encryptVigenere(text: string, key: string): VigenereResult {
       });
       keyIndex++;
     } else {
-      // Karakter non-alfabet (angka, spasi, simbol dipertahankan)
       result += char;
       steps.push({
         index: i + 1,
@@ -100,9 +89,6 @@ export function encryptVigenere(text: string, key: string): VigenereResult {
   };
 }
 
-/**
- * Dekripsi Vigenère Cipher: P_i = (C_i - K_i + 26) mod 26
- */
 export function decryptVigenere(cipherText: string, key: string): VigenereResult {
   const cleanKey = (key || 'KEY').toUpperCase().replace(/[^A-Z]/g, '') || 'KEY';
   const steps: VigenereTraceStep[] = [];

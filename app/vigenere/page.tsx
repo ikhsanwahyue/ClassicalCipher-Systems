@@ -46,18 +46,15 @@ export default function VigenerePage() {
   };
 
   return (
-    <MobileShell title="Menu 1: Vigenère Cipher" subtitle="Substitusi Polialfabetik Klasik">
+    <MobileShell title="Vigenere Cipher" subtitle="Substitusi Polialfabetik Klasik">
       <div className="space-y-4">
         {/* Header Info Banner */}
         <div className="bg-gradient-to-r from-cyan-950/60 to-slate-900 border border-cyan-500/30 rounded-2xl p-4 shadow-lg">
           <div className="flex items-start justify-between">
             <div>
-              <span className="text-[10px] font-mono uppercase px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">
-                Menu 1 • Klasik
-              </span>
-              <h2 className="text-base font-bold text-slate-100 mt-1">Vigenère Cipher</h2>
+              <h2 className="text-base font-bold text-slate-100 mt-1">Vigenere Cipher</h2>
               <p className="text-xs text-slate-400 mt-0.5 leading-relaxed">
-                Substitusi polialfabetik menggunakan kata kunci berulang untuk menggeser indeks alfabet modular 26 ($C_i = (P_i + K_i) \pmod{26}$).
+                Algoritma kriptografi klasik yang dikembangkan dengan metode substitusi abjad-majemuk (polyalphabetic substitution cipher).
               </p>
             </div>
           </div>
@@ -70,35 +67,33 @@ export default function VigenerePage() {
               setMode('encrypt');
               setResultData(null);
             }}
-            className={`py-2 text-xs font-semibold rounded-lg transition-all flex items-center justify-center gap-1.5 ${
-              mode === 'encrypt'
-                ? 'bg-cyan-500 text-slate-950 shadow-md shadow-cyan-500/20'
-                : 'text-slate-400 hover:text-slate-200'
-            }`}
+            className={`py-2 text-xs font-semibold rounded-lg transition-all flex items-center justify-center gap-1.5 ${mode === 'encrypt'
+              ? 'bg-cyan-500 text-slate-950 shadow-md shadow-cyan-500/20'
+              : 'text-slate-400 hover:text-slate-200'
+              }`}
           >
             <Sparkles className="w-3.5 h-3.5" />
-            Enkripsi (Plaintext → Ciphertext)
+            Enkripsi
           </button>
           <button
             onClick={() => {
               setMode('decrypt');
               setResultData(null);
             }}
-            className={`py-2 text-xs font-semibold rounded-lg transition-all flex items-center justify-center gap-1.5 ${
-              mode === 'decrypt'
-                ? 'bg-cyan-500 text-slate-950 shadow-md shadow-cyan-500/20'
-                : 'text-slate-400 hover:text-slate-200'
-            }`}
+            className={`py-2 text-xs font-semibold rounded-lg transition-all flex items-center justify-center gap-1.5 ${mode === 'decrypt'
+              ? 'bg-cyan-500 text-slate-950 shadow-md shadow-cyan-500/20'
+              : 'text-slate-400 hover:text-slate-200'
+              }`}
           >
             <ArrowDownUp className="w-3.5 h-3.5" />
-            Dekripsi (Ciphertext → Plaintext)
+            Dekripsi
           </button>
         </div>
 
         {/* Input Text Area */}
         <div className="space-y-1.5">
           <label className="text-xs font-semibold text-slate-300 flex justify-between">
-            <span>{mode === 'encrypt' ? 'Plaintext (Teks Asli)' : 'Ciphertext (Teks Terenkripsi)'}</span>
+            <span>{mode === 'encrypt' ? 'Plaintext' : 'Ciphertext'}</span>
             <span className="text-[11px] text-slate-500 font-mono">{inputText.length} karakter</span>
           </label>
           <textarea
@@ -114,8 +109,7 @@ export default function VigenerePage() {
         <div className="space-y-1.5">
           <div className="flex items-center justify-between">
             <label className="text-xs font-semibold text-slate-300 flex items-center gap-1.5">
-              <Key className="w-3.5 h-3.5 text-cyan-400" />
-              Kata Kunci (Vigenère Key)
+              Kata Kunci
             </label>
             <button
               onClick={generateRandomKey}
@@ -139,7 +133,7 @@ export default function VigenerePage() {
           className="w-full py-3 bg-gradient-to-r from-cyan-500 to-sky-500 hover:from-cyan-400 hover:to-sky-400 text-slate-950 font-bold text-sm rounded-xl shadow-lg shadow-cyan-500/20 transition-all flex items-center justify-center gap-2 active:scale-[0.99]"
         >
           <Sparkles className="w-4 h-4" />
-          {mode === 'encrypt' ? 'Jalankan Enkripsi Vigenère' : 'Jalankan Dekripsi Vigenère'}
+          {mode === 'encrypt' ? 'Jalankan Enkripsi' : 'Jalankan Dekripsi'}
         </button>
 
         {/* Output Box */}
@@ -178,7 +172,6 @@ export default function VigenerePage() {
               </div>
 
               <div className="text-[11px] text-slate-400 font-mono flex items-center justify-between pt-1 border-t border-slate-800/80">
-                <span>Rumus: {resultData.formula}</span>
                 <span className="text-slate-500">{resultData.result.length} Karakter</span>
               </div>
             </div>
@@ -188,7 +181,7 @@ export default function VigenerePage() {
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <TableIcon className="w-4 h-4 text-cyan-400" />
-                  <h3 className="text-xs font-bold text-slate-200">Visualisasi Tracing Langkah-demi-Langkah</h3>
+                  <h3 className="text-xs font-bold text-slate-200">Detail Proses</h3>
                 </div>
                 <button
                   onClick={() => setShowTracing(!showTracing)}
