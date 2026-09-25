@@ -15,13 +15,25 @@ import {
 } from 'lucide-react';
 
 export default function VigenerePage() {
+  // State untuk menyimpan mode saat ini: 'encrypt' (enkripsi) atau 'decrypt' (dekripsi)
   const [mode, setMode] = useState<'encrypt' | 'decrypt'>('encrypt');
+
+  // State untuk menyimpan teks input dari pengguna
   const [inputText, setInputText] = useState('KRIPTOGRAFI KLASIK POLIALFABETIK');
+
+  // State untuk menyimpan kata kunci Vigenère yang digunakan
   const [key, setKey] = useState('KUNCI');
+
+  // State untuk menyimpan hasil enkripsi/dekripsi beserta data visualisasi per langkah
   const [resultData, setResultData] = useState<VigenereResult | null>(null);
+
+  // State untuk menandai apakah teks hasil sudah disalin ke clipboard
   const [copied, setCopied] = useState(false);
+
+  // State untuk menampilkan atau menyembunyikan tabel tracing karakter
   const [showTracing, setShowTracing] = useState(true);
 
+  // Fungsi utama: menjalankan enkripsi atau dekripsi sesuai mode yang dipilih
   const handleProcess = () => {
     if (!inputText.trim()) return;
     if (mode === 'encrypt') {
@@ -31,6 +43,7 @@ export default function VigenerePage() {
     }
   };
 
+  // Fungsi untuk menyalin hasil ke clipboard dan menampilkan ikon konfirmasi sementara
   const handleCopy = () => {
     if (resultData?.result) {
       navigator.clipboard.writeText(resultData.result);
@@ -39,6 +52,7 @@ export default function VigenerePage() {
     }
   };
 
+  // Fungsi untuk memilih kunci secara acak dari daftar kata kunci contoh
   const generateRandomKey = () => {
     const keys = ['CIPHER', 'SECURITY', 'MATEMATIKA', 'RAHASIA', 'ALGORITMA', 'INFORMATIKA'];
     const random = keys[Math.floor(Math.random() * keys.length)];
@@ -48,19 +62,20 @@ export default function VigenerePage() {
   return (
     <MobileShell title="Vigenere Cipher" subtitle="Substitusi Polialfabetik Klasik">
       <div className="space-y-4">
-        {/* Header Info Banner */}
+
+        {/* Kartu penjelasan singkat algoritma Vigenère untuk konteks presentasi */}
         <div className="bg-gradient-to-r from-cyan-950/60 to-slate-900 border border-cyan-500/30 rounded-2xl p-4 shadow-lg">
           <div className="flex items-start justify-between">
             <div>
               <h2 className="text-base font-bold text-slate-100 mt-1">Vigenere Cipher</h2>
               <p className="text-xs text-slate-400 mt-0.5 leading-relaxed">
-                Algoritma kriptografi klasik yang dikembangkan dengan metode substitusi abjad-majemuk (polyalphabetic substitution cipher).
+              algoritma kriptografi klasik berjenis substitusi abjad-majemuk (polyalphabetic substitution) yang menggeser setiap huruf plaintext secara dinamis menggunakan kata kunci periodik dan rumus C = (P + K) mod 26 untuk menyamarkan pola frekuensi huruf.
               </p>
             </div>
           </div>
         </div>
 
-        {/* Mode Switch Tabs */}
+        {/* Tombol pilihan mode: Enkripsi (plaintext → ciphertext) atau Dekripsi (ciphertext → plaintext) */}
         <div className="grid grid-cols-2 p-1 bg-slate-950 rounded-xl border border-slate-800">
           <button
             onClick={() => {
@@ -90,7 +105,7 @@ export default function VigenerePage() {
           </button>
         </div>
 
-        {/* Input Text Area */}
+        {/* Area input teks — berubah label sesuai mode: plaintext saat enkripsi, ciphertext saat dekripsi */}
         <div className="space-y-1.5">
           <label className="text-xs font-semibold text-slate-300 flex justify-between">
             <span>{mode === 'encrypt' ? 'Plaintext' : 'Ciphertext'}</span>
@@ -105,7 +120,7 @@ export default function VigenerePage() {
           />
         </div>
 
-        {/* Key Configuration Area */}
+        {/* Area konfigurasi kata kunci Vigenère dengan fitur acak kunci */}
         <div className="space-y-1.5">
           <div className="flex items-center justify-between">
             <label className="text-xs font-semibold text-slate-300 flex items-center gap-1.5">
@@ -127,7 +142,7 @@ export default function VigenerePage() {
           />
         </div>
 
-        {/* Action Button */}
+        {/* Tombol utama untuk menjalankan proses enkripsi atau dekripsi */}
         <button
           onClick={handleProcess}
           className="w-full py-3 bg-gradient-to-r from-cyan-500 to-sky-500 hover:from-cyan-400 hover:to-sky-400 text-slate-950 font-bold text-sm rounded-xl shadow-lg shadow-cyan-500/20 transition-all flex items-center justify-center gap-2 active:scale-[0.99]"
@@ -136,9 +151,11 @@ export default function VigenerePage() {
           {mode === 'encrypt' ? 'Jalankan Enkripsi' : 'Jalankan Dekripsi'}
         </button>
 
-        {/* Output Box */}
+        {/* Area hasil: ditampilkan hanya setelah proses dijalankan */}
         {resultData && (
           <div className="space-y-4 pt-2">
+
+            {/* Kartu menampilkan hasil ciphertext atau plaintext yang berhasil dipulihkan */}
             <div className="bg-slate-950 border border-cyan-500/40 rounded-2xl p-4 shadow-xl space-y-3">
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-2">
@@ -176,7 +193,7 @@ export default function VigenerePage() {
               </div>
             </div>
 
-            {/* Tracing Table Collapsible */}
+            {/* Tabel tracing: menampilkan detail perhitungan setiap karakter secara modular 26 */}
             <div className="bg-slate-950/80 border border-slate-800 rounded-2xl p-4 space-y-3">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">

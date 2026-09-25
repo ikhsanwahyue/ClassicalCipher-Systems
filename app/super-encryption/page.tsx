@@ -115,15 +115,12 @@ export default function SuperEncryptionPage() {
   };
 
   return (
-    <MobileShell title="Menu 5: Super Enkripsi" subtitle="Multi-Layered Cryptosystem Pipeline">
+    <MobileShell title="Super Enkripsi" subtitle="Multi-Layered Cryptosystem Pipeline">
       <div className="space-y-4">
-        {/* Header Info Banner */}
+        {/* Kartu penjelasan konsep Super Enkripsi: 4 lapisan kriptografi yang dijalankan secara estafet berurutan */}
         <div className="bg-gradient-to-r from-amber-950/60 via-slate-900 to-indigo-950/60 border border-amber-500/30 rounded-2xl p-4 shadow-lg">
           <div className="flex items-start justify-between">
             <div>
-              <span className="text-[10px] font-mono uppercase px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30">
-                Menu 5 • Multi-Layer
-              </span>
               <h2 className="text-base font-bold text-slate-100 mt-1">Multi-Layered Cryptosystem</h2>
               <p className="text-xs text-slate-400 mt-0.5 leading-relaxed">
                 Penggabungan estafet 4 lapisan algoritma secara berurutan: Substitusi Klasik (Vigenère) → Transposisi Klasik (Rail Fence) → Kunci Simetri (Rijndael/AES) → Kunci Publik (RSA).
@@ -131,28 +128,28 @@ export default function SuperEncryptionPage() {
             </div>
           </div>
 
-          {/* Pipeline Visual Flow */}
+          {/* Diagram alur pipeline 4 lapisan: setiap algoritma menerima output dari lapisan sebelumnya */}
           <div className="mt-3 pt-2.5 border-t border-slate-800/80 grid grid-cols-4 gap-1 text-center font-mono text-[10px]">
             <div className="bg-slate-900/80 border border-cyan-500/30 p-1.5 rounded-lg text-cyan-300">
-              <p className="font-bold">1. Vigenère</p>
+              <p className="font-bold">Vigenere</p>
               <p className="text-[8px] text-slate-400">Substitusi</p>
             </div>
             <div className="bg-slate-900/80 border border-emerald-500/30 p-1.5 rounded-lg text-emerald-300">
-              <p className="font-bold">2. Rail Fence</p>
+              <p className="font-bold">Rail Fence</p>
               <p className="text-[8px] text-slate-400">Transposisi</p>
             </div>
             <div className="bg-slate-900/80 border border-blue-500/30 p-1.5 rounded-lg text-blue-300">
-              <p className="font-bold">3. Rijndael</p>
+              <p className="font-bold">Rijndael</p>
               <p className="text-[8px] text-slate-400">AES-256</p>
             </div>
             <div className="bg-slate-900/80 border border-purple-500/30 p-1.5 rounded-lg text-purple-300">
-              <p className="font-bold">4. RSA</p>
+              <p className="font-bold">RSA</p>
               <p className="text-[8px] text-slate-400">Asimetris</p>
             </div>
           </div>
         </div>
 
-        {/* Mode Switch Tabs */}
+        {/* Tombol pilihan mode: Enkripsi Estafet (plaintext → 4 lapisan) atau Dekripsi Estafet Terbalik (4 lapisan terbalik → plaintext) */}
         <div className="grid grid-cols-2 p-1 bg-slate-950 rounded-xl border border-slate-800">
           <button
             onClick={() => {
@@ -168,7 +165,7 @@ export default function SuperEncryptionPage() {
             }`}
           >
             <Sparkles className="w-3.5 h-3.5" />
-            Enkripsi Estafet 4-Lapis
+            Enkripsi
           </button>
           <button
             onClick={() => {
@@ -184,11 +181,11 @@ export default function SuperEncryptionPage() {
             }`}
           >
             <ArrowDownUp className="w-3.5 h-3.5" />
-            Dekripsi Estafet Terbalik
+            Dekripsi
           </button>
         </div>
 
-        {/* Key Configuration Accordion */}
+        {/* Panel konfigurasi kunci: satu panel terpadu untuk mengatur kunci keempat lapisan sekaligus */}
         <div className="bg-slate-950 border border-slate-800 rounded-2xl p-3.5 space-y-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
@@ -254,7 +251,7 @@ export default function SuperEncryptionPage() {
           </div>
         </div>
 
-        {/* Input Text Area */}
+        {/* Area input teks: plaintext untuk mode enkripsi, atau Super Ciphertext untuk mode dekripsi */}
         <div className="space-y-1.5">
           <label className="text-xs font-semibold text-slate-300 flex justify-between">
             <span>
@@ -271,7 +268,7 @@ export default function SuperEncryptionPage() {
           />
         </div>
 
-        {/* Error Alert */}
+        {/* Pesan error: ditampilkan jika salah satu lapisan gagal diproses, misalnya kunci RSA tidak valid */}
         {errorMessage && (
           <div className="p-3 bg-rose-500/10 border border-rose-500/30 rounded-xl text-rose-300 text-xs flex items-start gap-2">
             <Info className="w-4 h-4 shrink-0 mt-0.5 text-rose-400" />
@@ -279,7 +276,7 @@ export default function SuperEncryptionPage() {
           </div>
         )}
 
-        {/* Action Button */}
+        {/* Tombol utama: memulai pemrosesan 4 lapisan estafet secara berurutan (async pipeline) */}
         <button
           onClick={handleProcess}
           disabled={isProcessing}
@@ -293,7 +290,7 @@ export default function SuperEncryptionPage() {
             : 'Jalankan Dekripsi Super Pipeline'}
         </button>
 
-        {/* Final Result Card */}
+        {/* Area hasil akhir: Super Ciphertext (enkripsi) atau Plaintext Terpulihkan (dekripsi) */}
         {finalResult && (
           <div className="space-y-4 pt-2">
             <div className="bg-slate-950 border border-amber-500/40 rounded-2xl p-4 shadow-xl space-y-3">
@@ -320,7 +317,7 @@ export default function SuperEncryptionPage() {
               </div>
             </div>
 
-            {/* DETAIL PROSES VISUAL PER LAPISAN KRIPTOGRAFI */}
+            {/* Kartu tracing per lapisan: menampilkan input, output, kunci, dan detail teknis masing-masing dari 4 algoritma */}
             <div className="space-y-3">
               <div className="flex items-center justify-between px-1">
                 <h3 className="text-xs font-bold text-slate-200 uppercase tracking-wider flex items-center gap-2">
@@ -336,7 +333,7 @@ export default function SuperEncryptionPage() {
                     key={stage.stage}
                     className="bg-slate-950/90 border border-slate-800 hover:border-amber-500/40 rounded-2xl p-3.5 space-y-2.5 transition-all shadow-md"
                   >
-                    {/* Card Header */}
+                    {/* Header kartu lapisan: nomor urut, nama algoritma, kategori, dan tombol buka/tutup detail */}
                     <div
                       onClick={() => toggleStageExpand(stage.stage)}
                       className="flex items-center justify-between cursor-pointer select-none"

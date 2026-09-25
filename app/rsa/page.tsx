@@ -27,23 +27,48 @@ import {
 } from 'lucide-react';
 
 export default function RsaPage() {
+  // State mode: 'encrypt' menggunakan Kunci Publik, 'decrypt' menggunakan Kunci Privat
   const [mode, setMode] = useState<'encrypt' | 'decrypt'>('encrypt');
+
+  // State teks input: plaintext untuk enkripsi, ciphertext Base64 untuk dekripsi
   const [inputText, setInputText] = useState('PESAN RAHASIA ASIMETRIS KUNCI PUBLIK RSA-2048');
+
+  // State pasangan kunci RSA yang digenerate secara otomatis saat halaman pertama dibuka
   const [keys, setKeys] = useState<RsaKeyPairPem | null>(null);
+
+  // State teks kunci publik PEM yang dapat diedit oleh pengguna
   const [publicKeyInput, setPublicKeyInput] = useState('');
+
+  // State teks kunci privat PEM yang dapat diedit oleh pengguna
   const [privateKeyInput, setPrivateKeyInput] = useState('');
+
+  // State penanda apakah pasangan kunci RSA sedang dalam proses pembuatan
   const [isGenerating, setIsGenerating] = useState(false);
+
+  // State penanda apakah proses enkripsi/dekripsi RSA sedang berjalan
   const [isProcessing, setIsProcessing] = useState(false);
+
+  // State hasil enkripsi RSA: ciphertext, parameter matematis, dan tracing per blok
   const [encryptionResult, setEncryptionResult] = useState<RsaEncryptionResult | null>(null);
+
+  // State hasil dekripsi RSA: plaintext yang berhasil dipulihkan dan laporan per blok
   const [decryptionResult, setDecryptionResult] = useState<{ plaintext: string; chunksCount: number; traces: { chunkIndex: number; status: string }[] } | null>(null);
+
+  // State pesan error yang muncul jika kunci tidak valid atau operasi RSA gagal
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  // State untuk menandai jenis teks yang baru disalin: 'pub', 'priv', atau 'res'
   const [copiedKey, setCopiedKey] = useState<'pub' | 'priv' | 'res' | null>(null);
+
+  // State untuk menampilkan atau menyembunyikan panel detail matematis RSA
   const [showMathDetails, setShowMathDetails] = useState(true);
 
+  // Saat komponen pertama kali dimuat, langsung bangkitkan pasangan kunci RSA 2048-bit
   useEffect(() => {
     handleGenerateKeys();
   }, []);
 
+  // Fungsi untuk membangkitkan pasangan kunci RSA baru menggunakan Web Crypto API
   const handleGenerateKeys = async () => {
     setIsGenerating(true);
     setErrorMessage(null);
@@ -59,6 +84,7 @@ export default function RsaPage() {
     }
   };
 
+  // Fungsi utama: menjalankan enkripsi (dengan kunci publik) atau dekripsi (dengan kunci privat)
   const handleProcess = async () => {
     if (!inputText.trim()) return;
     setIsProcessing(true);
@@ -91,6 +117,7 @@ export default function RsaPage() {
     }
   };
 
+  // Fungsi untuk menyalin teks ke clipboard dengan umpan balik visual per jenis kunci/hasil
   const handleCopyText = (text: string, type: 'pub' | 'priv' | 'res') => {
     navigator.clipboard.writeText(text);
     setCopiedKey(type);
@@ -98,24 +125,22 @@ export default function RsaPage() {
   };
 
   return (
-    <MobileShell title="Menu 4: Kunci Publik / RSA" subtitle="Kunci Nirsimetri Modern (RSA-OAEP 2048)">
+    <MobileShell title="Kunci Publik (RSA)" subtitle="Kunci Nirsimetri Modern (RSA-OAEP 2048)">
       <div className="space-y-4">
-        {/* Header Info Banner */}
+
+        {/* Kartu penjelasan algoritma RSA asimetris untuk konteks presentasi */}
         <div className="bg-gradient-to-r from-purple-950/60 to-slate-900 border border-purple-500/30 rounded-2xl p-4 shadow-lg">
           <div className="flex items-start justify-between">
             <div>
-              <span className="text-[10px] font-mono uppercase px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/30">
-                Menu 4 • Nirsimetri Modern
-              </span>
               <h2 className="text-base font-bold text-slate-100 mt-1">Kunci Publik (RSA)</h2>
               <p className="text-xs text-slate-400 mt-0.5 leading-relaxed">
-                Kriptografi asimetris berbasis pasangan Kunci Publik ($e, n$) dan Kunci Privat ($d, n$) dengan skema padding aman RSAES-OAEP.
+                Algoritma kriptografi modern berjenis kunci publik atau asimetris (asymmetric cryptography) yang memanfaatkan sepasang kunci berbeda kunci publik untuk mengenkripsi dan kunci privat untuk mendeskripsikan pesan.
               </p>
             </div>
           </div>
         </div>
 
-        {/* Mode Switch Tabs */}
+        {/* Tombol pilihan mode: Enkripsi dengan Kunci Publik atau Dekripsi dengan Kunci Privat */}
         <div className="grid grid-cols-2 p-1 bg-slate-950 rounded-xl border border-slate-800">
           <button
             onClick={() => {
@@ -131,7 +156,7 @@ export default function RsaPage() {
             }`}
           >
             <Sparkles className="w-3.5 h-3.5" />
-            Enkripsi (Public Key)
+            Enkripsi
           </button>
           <button
             onClick={() => {
@@ -147,11 +172,11 @@ export default function RsaPage() {
             }`}
           >
             <ArrowDownUp className="w-3.5 h-3.5" />
-            Dekripsi (Private Key)
+            Dekripsi
           </button>
         </div>
 
-        {/* RSA Key Management Panel */}
+        {/* Panel manajemen pasangan kunci RSA: tampilkan, edit, atau bangkitkan ulang kunci */}
         <div className="bg-slate-950 border border-purple-500/30 rounded-2xl p-3.5 space-y-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
@@ -169,7 +194,7 @@ export default function RsaPage() {
           </div>
 
           <div className="grid grid-cols-1 gap-2.5">
-            {/* Public Key Display/Editor */}
+            {/* Area kunci publik: digunakan untuk mengenkripsi — boleh dibagikan secara terbuka */}
             <div className="space-y-1">
               <div className="flex items-center justify-between text-[11px]">
                 <span className="font-semibold text-purple-300 flex items-center gap-1">
@@ -192,7 +217,7 @@ export default function RsaPage() {
               />
             </div>
 
-            {/* Private Key Display/Editor */}
+            {/* Area kunci privat: digunakan untuk mendekripsi — HARUS dijaga kerahasiaannya */}
             <div className="space-y-1">
               <div className="flex items-center justify-between text-[11px]">
                 <span className="font-semibold text-rose-300 flex items-center gap-1">
@@ -217,10 +242,10 @@ export default function RsaPage() {
           </div>
         </div>
 
-        {/* Input Text Area */}
+        {/* Area input teks: plaintext (pesan asli) untuk enkripsi, ciphertext RSA untuk dekripsi */}
         <div className="space-y-1.5">
           <label className="text-xs font-semibold text-slate-300 flex justify-between">
-            <span>{mode === 'encrypt' ? 'Plaintext (Pesan Asli)' : 'Ciphertext RSA (Payload Base64)'}</span>
+            <span>{mode === 'encrypt' ? 'Plaintext' : 'Ciphertext RSA (Payload Base64)'}</span>
             <span className="text-[11px] text-slate-500 font-mono">{inputText.length} karakter</span>
           </label>
           <textarea
@@ -236,7 +261,7 @@ export default function RsaPage() {
           />
         </div>
 
-        {/* Error Alert */}
+        {/* Pesan error: muncul jika kunci tidak cocok, format salah, atau operasi RSA gagal */}
         {errorMessage && (
           <div className="p-3 bg-rose-500/10 border border-rose-500/30 rounded-xl text-rose-300 text-xs flex items-start gap-2">
             <Info className="w-4 h-4 shrink-0 mt-0.5 text-rose-400" />
@@ -244,7 +269,7 @@ export default function RsaPage() {
           </div>
         )}
 
-        {/* Action Button */}
+        {/* Tombol utama untuk menjalankan enkripsi atau dekripsi RSA */}
         <button
           onClick={handleProcess}
           disabled={isProcessing}
@@ -258,10 +283,11 @@ export default function RsaPage() {
             : 'Dekripsi dengan Kunci Privat'}
         </button>
 
-        {/* ENCRYPTION RESULT & PROCESS DETAILS */}
+        {/* Area hasil enkripsi RSA: ciphertext, parameter matematis, dan tracing per blok */}
         {encryptionResult && (
           <div className="space-y-4 pt-2">
-            {/* Ciphertext Output Card */}
+
+            {/* Kartu output ciphertext RSA dalam format Base64 yang siap dikirim */}
             <div className="bg-slate-950 border border-purple-500/40 rounded-2xl p-4 shadow-xl space-y-3">
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-2">
@@ -285,7 +311,7 @@ export default function RsaPage() {
               </div>
             </div>
 
-            {/* VISUAL PROCESS DETAIL 1: Mathematical Parameters */}
+            {/* Parameter matematis RSA: ukuran kunci, eksponen publik, hash, dan skema padding */}
             <div className="bg-slate-950/90 border border-purple-500/30 rounded-2xl p-4 space-y-3">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
@@ -300,10 +326,12 @@ export default function RsaPage() {
               </div>
 
               <div className="grid grid-cols-2 gap-2 text-xs font-mono">
+                {/* Modulus n: hasil perkalian dua bilangan prima besar p dan q */}
                 <div className="bg-slate-900 p-2.5 rounded-xl border border-slate-800 space-y-0.5">
                   <span className="text-slate-500 text-[10px] block">Modulus (n = p × q):</span>
                   <span className="text-purple-300 font-bold">{encryptionResult.mathParameters.keySize}</span>
                 </div>
+                {/* Eksponen publik e = 65537: nilai standar Fermat F4 yang umum digunakan */}
                 <div className="bg-slate-900 p-2.5 rounded-xl border border-slate-800 space-y-0.5">
                   <span className="text-slate-500 text-[10px] block">Public Exponent (e):</span>
                   <span className="text-purple-300 font-bold">{encryptionResult.mathParameters.publicExponent}</span>
@@ -319,7 +347,7 @@ export default function RsaPage() {
               </div>
             </div>
 
-            {/* VISUAL PROCESS DETAIL 2: Chunk-by-Chunk Modular Exponentiation Trace */}
+            {/* Tracing per blok: rincian pemrosesan setiap potongan teks dengan operasi C = M^e mod n */}
             <div className="bg-slate-950/90 border border-slate-800 rounded-2xl p-4 space-y-3">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
@@ -364,7 +392,7 @@ export default function RsaPage() {
           </div>
         )}
 
-        {/* DECRYPTION RESULT & PROCESS DETAILS */}
+        {/* Area hasil dekripsi RSA: plaintext yang berhasil dipulihkan dan laporan verifikasi blok */}
         {decryptionResult && (
           <div className="space-y-4 pt-2">
             <div className="bg-slate-950 border border-emerald-500/40 rounded-2xl p-4 shadow-xl space-y-3">
@@ -388,7 +416,7 @@ export default function RsaPage() {
               </div>
             </div>
 
-            {/* Decryption Step Breakdown */}
+            {/* Laporan verifikasi: status pemulihan setiap blok RSA dengan operasi M = C^d mod n */}
             <div className="bg-slate-950/90 border border-slate-800 rounded-2xl p-4 space-y-2">
               <h3 className="text-xs font-bold text-slate-200">
                 Laporan Verifikasi Pemulihan Blok Asimetris ($M_i = C_i^d \pmod n$)

@@ -24,16 +24,34 @@ import {
 } from 'lucide-react';
 
 export default function RijndaelPage() {
+  // State mode: 'encrypt' untuk enkripsi, 'decrypt' untuk dekripsi
   const [mode, setMode] = useState<'encrypt' | 'decrypt'>('encrypt');
+
+  // State teks input yang akan diproses
   const [inputText, setInputText] = useState('RIJNDAEL ADVANCED ENCRYPTION STANDARD AES-256');
+
+  // State passphrase (kata sandi) simetris yang digunakan sebagai bahan kunci AES-256
   const [passphrase, setPassphrase] = useState('SimetrisKey2026!');
+
+  // State format output: 'base64' (standar transfer data) atau 'hex' (representasi byte)
   const [format, setFormat] = useState<'base64' | 'hex'>('base64');
+
+  // State hasil enkripsi yang memuat ciphertext, matriks status, dan komponen GCM
   const [resultData, setResultData] = useState<RijndaelEncryptionResult | null>(null);
+
+  // State teks plaintext yang berhasil dipulihkan setelah dekripsi
   const [decryptedText, setDecryptedText] = useState<string | null>(null);
+
+  // State pesan error jika enkripsi/dekripsi gagal (misal: kunci salah atau format tidak valid)
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  // State tanda salin ke clipboard
   const [copied, setCopied] = useState(false);
+
+  // State untuk tab aktif pada visualisasi 4 transformasi putaran AES
   const [activeStepTab, setActiveStepTab] = useState<'sub' | 'shift' | 'mix' | 'key'>('sub');
 
+  // Fungsi utama: menjalankan enkripsi atau dekripsi AES-256 secara asinkron via Web Crypto API
   const handleProcess = async () => {
     if (!inputText.trim()) return;
     setErrorMessage(null);
@@ -57,12 +75,14 @@ export default function RijndaelPage() {
     }
   };
 
+  // Fungsi untuk menyalin teks tertentu ke clipboard dengan umpan balik ikon sementara
   const handleCopy = (textToCopy: string) => {
     navigator.clipboard.writeText(textToCopy);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
 
+  // Fungsi untuk membangkitkan passphrase acak 16 karakter (huruf, angka, simbol)
   const generateRandomKey = () => {
     const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%&*';
     let key = '';
@@ -73,24 +93,22 @@ export default function RijndaelPage() {
   };
 
   return (
-    <MobileShell title="Menu 3: Rijndael / AES" subtitle="Kunci Simetris Modern (AES-256)">
+    <MobileShell title="Rijndael (AES)" subtitle="Kunci Simetris Modern (AES-256)">
       <div className="space-y-4">
-        {/* Header Info Banner */}
+
+        {/* Kartu penjelasan algoritma Rijndael/AES-256 untuk konteks presentasi */}
         <div className="bg-gradient-to-r from-blue-950/60 to-slate-900 border border-blue-500/30 rounded-2xl p-4 shadow-lg">
           <div className="flex items-start justify-between">
             <div>
-              <span className="text-[10px] font-mono uppercase px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-300 border border-blue-500/30">
-                Menu 3 • Simetri Modern
-              </span>
               <h2 className="text-base font-bold text-slate-100 mt-1">Rijndael (AES-256)</h2>
               <p className="text-xs text-slate-400 mt-0.5 leading-relaxed">
-                Standar enkripsi simetris modern (*Block Cipher SPN*) dengan 14 putaran transformasi matriks status $4 \times 4$ dan otentikasi GCM.
+                Algoritma kriptografi modern berjenis kunci simetri berbasis blok (symmetric-key block cipher) yang mengamankan data melalui serangkaian putaran transformasi matriks byte menggunakan kunci bersama yang sangat tangguh.
               </p>
             </div>
           </div>
         </div>
 
-        {/* Mode Switch Tabs */}
+        {/* Tombol pilihan mode: Enkripsi (plaintext → AES-256) atau Dekripsi (AES-256 → plaintext) */}
         <div className="grid grid-cols-2 p-1 bg-slate-950 rounded-xl border border-slate-800">
           <button
             onClick={() => {
@@ -106,7 +124,7 @@ export default function RijndaelPage() {
             }`}
           >
             <Sparkles className="w-3.5 h-3.5" />
-            Enkripsi (Plaintext → AES-256)
+            Enkripsi
           </button>
           <button
             onClick={() => {
@@ -122,14 +140,14 @@ export default function RijndaelPage() {
             }`}
           >
             <ArrowDownUp className="w-3.5 h-3.5" />
-            Dekripsi (AES-256 → Plaintext)
+            Dekripsi
           </button>
         </div>
 
-        {/* Input Text Area */}
+        {/* Area input teks: plaintext saat enkripsi, ciphertext Base64/Hex saat dekripsi */}
         <div className="space-y-1.5">
           <label className="text-xs font-semibold text-slate-300 flex justify-between">
-            <span>{mode === 'encrypt' ? 'Plaintext (Teks Murni)' : 'Ciphertext (Base64 / Hex)'}</span>
+            <span>{mode === 'encrypt' ? 'Plaintext' : 'Ciphertext (Base64 / Hex)'}</span>
             <span className="text-[11px] text-slate-500 font-mono">{inputText.length} karakter</span>
           </label>
           <textarea
@@ -145,11 +163,10 @@ export default function RijndaelPage() {
           />
         </div>
 
-        {/* Passphrase Area */}
+        {/* Input passphrase simetris: digunakan sebagai bahan derivasi kunci AES-256 via SHA-256 */}
         <div className="space-y-1.5">
           <div className="flex items-center justify-between">
             <label className="text-xs font-semibold text-slate-300 flex items-center gap-1.5">
-              <Key className="w-3.5 h-3.5 text-blue-400" />
               Kunci Sandi Rahasia (Simetris)
             </label>
             <button
@@ -168,7 +185,7 @@ export default function RijndaelPage() {
           />
         </div>
 
-        {/* Error Alert */}
+        {/* Pesan error ditampilkan jika proses gagal, misalnya kunci salah atau data rusak */}
         {errorMessage && (
           <div className="p-3 bg-rose-500/10 border border-rose-500/30 rounded-xl text-rose-300 text-xs flex items-start gap-2">
             <Info className="w-4 h-4 shrink-0 mt-0.5 text-rose-400" />
@@ -176,26 +193,27 @@ export default function RijndaelPage() {
           </div>
         )}
 
-        {/* Action Button */}
+        {/* Tombol utama untuk menjalankan enkripsi atau dekripsi AES-256 */}
         <button
           onClick={handleProcess}
           className="w-full py-3 bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-400 hover:to-indigo-400 text-slate-950 font-bold text-sm rounded-xl shadow-lg shadow-blue-500/20 transition-all flex items-center justify-center gap-2 active:scale-[0.99]"
         >
           <Lock className="w-4 h-4" />
-          {mode === 'encrypt' ? 'Jalankan Enkripsi AES-256' : 'Jalankan Dekripsi AES-256'}
+          {mode === 'encrypt' ? 'Jalankan Enkripsi' : 'Jalankan Dekripsi AES-256'}
         </button>
 
-        {/* Encryption Result Box */}
+        {/* Area hasil enkripsi: muncul setelah enkripsi berhasil dijalankan */}
         {resultData && (
           <div className="space-y-4 pt-2">
-            {/* Output Card */}
+
+            {/* Kartu output ciphertext dengan toggle format Base64 / Hex */}
             <div className="bg-slate-950 border border-blue-500/40 rounded-2xl p-4 shadow-xl space-y-3">
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-2">
                   <ShieldCheck className="w-4 h-4 text-blue-400" />
                   <span className="text-xs font-bold text-slate-200">Hasil Ciphertext AES-256-GCM</span>
                 </div>
-                {/* Format Toggle */}
+                {/* Toggle untuk memilih format tampilan: Base64 (lebih ringkas) atau Hex (setiap byte terlihat) */}
                 <div className="flex bg-slate-900 rounded-lg p-0.5 border border-slate-800">
                   <button
                     onClick={() => setFormat('base64')}
@@ -246,13 +264,13 @@ export default function RijndaelPage() {
               </div>
             </div>
 
-            {/* VISUAL PROCESS DETAIL 1: State Matrix 4x4 */}
+            {/* Visualisasi State Matrix 4×4: menampilkan blok pertama 16 byte plaintext dalam format Rijndael */}
             <div className="bg-slate-950/90 border border-blue-500/30 rounded-2xl p-4 space-y-3">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <Grid className="w-4 h-4 text-blue-400" />
                   <h3 className="text-xs font-bold text-slate-200">
-                    Visualisasi State Matrix $4 \times 4$ (Blok Pertama 16-Byte)
+                    Visualisasi State Matrix 4 x 4 (Blok Pertama 16-Byte)
                   </h3>
                 </div>
                 <span className="text-[10px] font-mono text-blue-300 bg-blue-500/10 px-2 py-0.5 rounded border border-blue-500/20">
@@ -261,7 +279,7 @@ export default function RijndaelPage() {
               </div>
 
               <p className="text-[11px] text-slate-400 leading-relaxed">
-                Teks disusun dalam kolom-kolom matriks $4 \times 4$ sesuai spesifikasi Rijndael / AES. Setiap sel memuat nilai Byte dalam format Hexadecimal dan representasi karakternya:
+                Teks disusun dalam kolom-kolom matriks 4 × 4 sesuai spesifikasi Rijndael / AES. Setiap sel memuat nilai Byte dalam format Hexadecimal dan representasi karakternya :
               </p>
 
               <div className="grid grid-cols-4 gap-1.5 font-mono text-center">
@@ -286,19 +304,19 @@ export default function RijndaelPage() {
               </div>
             </div>
 
-            {/* VISUAL PROCESS DETAIL 2: 4 Round Transformations Simulation */}
+            {/* Simulasi 4 transformasi putaran Rijndael yang berjalan dalam setiap putaran AES */}
             <div className="bg-slate-950/90 border border-slate-800 rounded-2xl p-4 space-y-3">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <Cpu className="w-4 h-4 text-blue-400" />
                   <h3 className="text-xs font-bold text-slate-200">
-                    Detail Simulasi 4 Transformasi Putaran (*Rounds*)
+                    Detail Simulasi 4 Transformasi Putaran (Rounds)
                   </h3>
                 </div>
                 <span className="text-[10px] font-mono text-slate-400">14 Putaran Total</span>
               </div>
 
-              {/* Sub-tabs for the 4 transformations */}
+              {/* Tab untuk berpindah antara 4 transformasi: SubBytes, ShiftRows, MixColumns, AddRoundKey */}
               <div className="grid grid-cols-4 gap-1 p-1 bg-slate-900 rounded-xl border border-slate-800 font-mono text-[10px]">
                 <button
                   onClick={() => setActiveStepTab('sub')}
@@ -308,7 +326,7 @@ export default function RijndaelPage() {
                       : 'text-slate-400 hover:text-slate-200'
                   }`}
                 >
-                  1. SubBytes
+                  SubBytes
                 </button>
                 <button
                   onClick={() => setActiveStepTab('shift')}
@@ -318,7 +336,7 @@ export default function RijndaelPage() {
                       : 'text-slate-400 hover:text-slate-200'
                   }`}
                 >
-                  2. ShiftRows
+                  ShiftRows
                 </button>
                 <button
                   onClick={() => setActiveStepTab('mix')}
@@ -328,7 +346,7 @@ export default function RijndaelPage() {
                       : 'text-slate-400 hover:text-slate-200'
                   }`}
                 >
-                  3. MixCols
+                  MixCols
                 </button>
                 <button
                   onClick={() => setActiveStepTab('key')}
@@ -338,20 +356,20 @@ export default function RijndaelPage() {
                       : 'text-slate-400 hover:text-slate-200'
                   }`}
                 >
-                  4. AddRoundKey
+                  AddRoundKey
                 </button>
               </div>
 
-              {/* Transformation Explanation & Matrix Comparison */}
+              {/* Panel detail penjelasan dan hasil matriks untuk setiap transformasi yang dipilih */}
               <div className="bg-slate-900/90 border border-slate-800 rounded-xl p-3 space-y-2">
                 {activeStepTab === 'sub' && (
                   <>
                     <div className="flex items-center justify-between text-xs">
-                      <span className="font-bold text-blue-300">1. SubBytes (Substitusi S-Box)</span>
+                      <span className="font-bold text-blue-300">SubBytes (Substitusi S-Box)</span>
                       <span className="text-[10px] text-slate-500">Non-linear Confusion</span>
                     </div>
                     <p className="text-[11px] text-slate-400 leading-relaxed">
-                      Setiap byte pada State Matrix diganti dengan nilai byte baru dari tabel substitusi non-linear S-Box pada lapangan hingga Galois $GF(2^8)$.
+                      Setiap byte pada State Matrix diganti dengan nilai byte baru dari tabel substitusi non-linear S-Box pada lapangan hingga Galois GF(2^8).
                     </p>
                     <div className="grid grid-cols-4 gap-1 font-mono text-center pt-1">
                       {resultData.simulation.afterSubBytes.map((row, r) =>
@@ -368,7 +386,7 @@ export default function RijndaelPage() {
                 {activeStepTab === 'shift' && (
                   <>
                     <div className="flex items-center justify-between text-xs">
-                      <span className="font-bold text-blue-300">2. ShiftRows (Permutasi Siklik Baris)</span>
+                      <span className="font-bold text-blue-300">ShiftRows (Permutasi Siklik Baris)</span>
                       <span className="text-[10px] text-slate-500">Row Diffusion</span>
                     </div>
                     <p className="text-[11px] text-slate-400 leading-relaxed">
@@ -389,11 +407,11 @@ export default function RijndaelPage() {
                 {activeStepTab === 'mix' && (
                   <>
                     <div className="flex items-center justify-between text-xs">
-                      <span className="font-bold text-blue-300">3. MixColumns (Difusi Kolom Polinomial)</span>
+                      <span className="font-bold text-blue-300">MixColumns (Difusi Kolom Polinomial)</span>
                       <span className="text-[10px] text-slate-500">Column Diffusion</span>
                     </div>
                     <p className="text-[11px] text-slate-400 leading-relaxed">
-                      Setiap kolom matriks dikalikan dengan matriks konstan sirkulan pada polinomial modulo $x^4 + 1$ untuk menyebarkan bit secara maksimal.
+                      Setiap kolom matriks dikalikan dengan matriks konstan sirkulan pada polinomial modulo x^4 + 1 untuk menyebarkan bit secara maksimal.
                     </p>
                     <div className="grid grid-cols-4 gap-1 font-mono text-center pt-1">
                       {resultData.simulation.afterMixColumns.map((row, r) =>
@@ -410,11 +428,11 @@ export default function RijndaelPage() {
                 {activeStepTab === 'key' && (
                   <>
                     <div className="flex items-center justify-between text-xs">
-                      <span className="font-bold text-blue-300">4. AddRoundKey (Operasi XOR Kunci Putaran)</span>
+                      <span className="font-bold text-blue-300">AddRoundKey (Operasi XOR Kunci Putaran)</span>
                       <span className="text-[10px] text-slate-500">Key Injection</span>
                     </div>
                     <p className="text-[11px] text-slate-400 leading-relaxed">
-                      Setiap byte State Matrix di-XOR langsung ($\oplus$) dengan subkunci putaran ke-14 hasil ekspansi kunci (*Key Schedule*).
+                      Setiap byte pada State Matrix diganti dengan nilai byte baru dari tabel substitusi non-linear S-Box pada lapangan hingga Galois GF(2^8)
                     </p>
                     <div className="grid grid-cols-4 gap-1 font-mono text-center pt-1">
                       {resultData.simulation.afterAddRoundKey.map((row, r) =>
@@ -430,13 +448,14 @@ export default function RijndaelPage() {
               </div>
             </div>
 
-            {/* VISUAL PROCESS DETAIL 3: GCM Package Components Breakdown */}
+            {/* Inspeksi komponen teknis kemasan AES-256-GCM: IV, kunci turunan, dan tag autentikasi */}
             <div className="bg-slate-950/90 border border-slate-800 rounded-2xl p-4 space-y-3">
               <h3 className="text-xs font-bold text-slate-200">
                 Inspeksi Komponen Kemasan AES-256-GCM (Authenticated)
               </h3>
 
               <div className="grid grid-cols-1 gap-2 text-xs font-mono">
+                {/* IV (Initialization Vector): nilai acak 96-bit yang unik untuk setiap sesi enkripsi */}
                 <div className="bg-slate-900 p-2.5 rounded-xl border border-slate-800 space-y-1">
                   <div className="flex justify-between items-center text-slate-400">
                     <span className="text-blue-400 font-bold">1. Initialization Vector (IV 96-bit / 12 Byte):</span>
@@ -445,6 +464,7 @@ export default function RijndaelPage() {
                   <p className="text-slate-300 break-all text-[11px]">{resultData.ivHex}</p>
                 </div>
 
+                {/* Kunci 256-bit: hasil derivasi SHA-256 dari passphrase, digunakan langsung oleh AES */}
                 <div className="bg-slate-900 p-2.5 rounded-xl border border-slate-800 space-y-1">
                   <div className="flex justify-between items-center text-slate-400">
                     <span className="text-blue-400 font-bold">2. Kunci 256-bit (Derivasi SHA-256 32 Byte):</span>
@@ -453,6 +473,7 @@ export default function RijndaelPage() {
                   <p className="text-slate-300 break-all text-[11px]">{resultData.keyBytesHex}</p>
                 </div>
 
+                {/* Authentication Tag: tanda tangan GMAC 128-bit untuk memastikan integritas data */}
                 <div className="bg-slate-900 p-2.5 rounded-xl border border-slate-800 space-y-1">
                   <div className="flex justify-between items-center text-slate-400">
                     <span className="text-blue-400 font-bold">3. Authentication Tag (128-bit / 16 Byte GMAC):</span>
@@ -465,7 +486,7 @@ export default function RijndaelPage() {
           </div>
         )}
 
-        {/* Decryption Result Box */}
+        {/* Area hasil dekripsi: muncul ketika plaintext berhasil dipulihkan dari ciphertext */}
         {decryptedText && (
           <div className="bg-slate-950 border border-emerald-500/40 rounded-2xl p-4 shadow-xl space-y-3">
             <div className="flex items-center justify-between">
