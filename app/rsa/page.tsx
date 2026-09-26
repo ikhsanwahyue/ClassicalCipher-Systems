@@ -180,7 +180,6 @@ export default function RsaPage() {
         <div className="bg-slate-950 border border-purple-500/30 rounded-2xl p-3.5 space-y-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <KeyRound className="w-4 h-4 text-purple-400" />
               <h3 className="text-xs font-bold text-slate-200">Manajemen Pasangan Kunci RSA (2048-bit)</h3>
             </div>
             <button
@@ -315,7 +314,6 @@ export default function RsaPage() {
             <div className="bg-slate-950/90 border border-purple-500/30 rounded-2xl p-4 space-y-3">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <Binary className="w-4 h-4 text-purple-400" />
                   <h3 className="text-xs font-bold text-slate-200">
                     Parameter Matematis Kriptografi Asimetris RSA
                   </h3>
@@ -351,39 +349,57 @@ export default function RsaPage() {
             <div className="bg-slate-950/90 border border-slate-800 rounded-2xl p-4 space-y-3">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <GitBranch className="w-4 h-4 text-purple-400" />
                   <h3 className="text-xs font-bold text-slate-200">
-                    Rincian Pemrosesan per Blok ($C_i = M_i^e \pmod n$)
+                    Rincian Pemrosesan
                   </h3>
                 </div>
-                <span className="text-[10px] font-mono text-slate-400">
-                  {encryptionResult.chunksCount} Blok Terenkripsi
+                <span className="text-[10px] font-mono text-purple-400 bg-purple-500/10 px-2 py-0.5 rounded-full border border-purple-500/20">
+                  {encryptionResult.chunksCount} Blok Aktif
                 </span>
               </div>
 
-              <div className="space-y-2 font-mono text-xs">
+              <div className="space-y-2.5 font-mono text-xs">
                 {encryptionResult.chunkTraces.map((trace) => (
                   <div
                     key={trace.chunkIndex}
-                    className="bg-slate-900/90 border border-slate-800 rounded-xl p-3 space-y-1.5"
+                    className="bg-slate-900/90 border border-slate-800/80 hover:border-purple-500/40 transition-colors rounded-xl p-3.5 space-y-2 shadow-inner"
                   >
-                    <div className="flex items-center justify-between">
-                      <span className="font-bold text-purple-400">
-                        Blok #{trace.chunkIndex} ({trace.plainByteLength} Byte)
-                      </span>
-                      <span className="text-[10px] text-slate-400 bg-slate-950 px-2 py-0.5 rounded border border-slate-800">
-                        Padded: {trace.cipherLengthBytes} Byte (2048-bit)
+                    {/* Header per blok */}
+                    <div className="flex items-center justify-between pb-1.5 border-b border-slate-800/60">
+                      <div className="flex items-center gap-2">
+                        <span className="w-5 h-5 rounded-lg bg-purple-500/20 text-purple-300 flex items-center justify-center text-[10px] font-bold border border-purple-500/30">
+                          {trace.chunkIndex}
+                        </span>
+                        <span className="font-bold text-slate-200 text-xs">
+                          Blok Data ({trace.plainByteLength} Byte Asli)
+                        </span>
+                      </div>
+                      <span className="text-[10px] text-slate-400 bg-slate-950 px-2 py-0.5 rounded-md border border-slate-800 font-mono">
+                        Padding: {trace.cipherLengthBytes} Byte
                       </span>
                     </div>
-                    <p className="text-[11px] text-slate-300">
-                      <span className="text-slate-500">Teks Masukan:</span> "{trace.plainSnippet}"
-                    </p>
-                    <p className="text-[10px] text-purple-300">
-                      <span className="text-slate-500">Operasi:</span> {trace.operation}
-                    </p>
-                    <div className="text-[10px] text-slate-400 bg-slate-950 p-1.5 rounded-lg border border-slate-850 truncate">
-                      <span className="text-slate-500">Keluaran Blok Base64: </span>
-                      <span className="text-purple-300 font-semibold">{trace.cipherBase64}</span>
+
+                    {/* Konten detail operasi */}
+                    <div className="grid grid-cols-1 gap-1.5 text-[11px] pt-0.5">
+                      <div className="flex items-start gap-2">
+                        <span className="text-slate-500 shrink-0 w-24">Teks Masukan:</span>
+                        <span className="text-slate-300 bg-slate-950/60 px-2 py-0.5 rounded border border-slate-800/60 truncate flex-1">
+                          &quot;{trace.plainSnippet}&quot;
+                        </span>
+                      </div>
+
+                      <div className="flex items-start gap-2">
+                        <span className="text-slate-500 shrink-0 w-24">Formula / Aksi:</span>
+                        <span className="text-purple-300 font-semibold">{trace.operation}</span>
+                      </div>
+                    </div>
+
+                    {/* Baris keluaran Base64 */}
+                    <div className="pt-1 border-t border-slate-800/40 flex items-center justify-between gap-2 text-[10px]">
+                      <span className="text-slate-500 shrink-0">Output Base64:</span>
+                      <span className="text-purple-300/90 bg-slate-950 px-2 py-1 rounded border border-slate-800/80 truncate font-mono select-all flex-1 text-right">
+                        {trace.cipherBase64}
+                      </span>
                     </div>
                   </div>
                 ))}
@@ -395,22 +411,22 @@ export default function RsaPage() {
         {/* Area hasil dekripsi RSA: plaintext yang berhasil dipulihkan dan laporan verifikasi blok */}
         {decryptionResult && (
           <div className="space-y-4 pt-2">
-            <div className="bg-slate-950 border border-emerald-500/40 rounded-2xl p-4 shadow-xl space-y-3">
+            <div className="bg-slate-950 border border-purple-500/40 rounded-2xl p-4 shadow-xl space-y-3">
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-2">
-                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                  <span className="w-2 h-2 rounded-full bg-purple-400 animate-pulse" />
                   <span className="text-xs font-bold text-slate-200">Pesan Asli Berhasil Didekripsi</span>
                 </div>
                 <button
                   onClick={() => handleCopyText(decryptionResult.plaintext, 'res')}
                   className="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium flex items-center gap-1.5 transition-colors border border-slate-700"
                 >
-                  {copiedKey === 'res' ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5 text-slate-400" />}
+                  {copiedKey === 'res' ? <Check className="w-3.5 h-3.5 text-purple-400" /> : <Copy className="w-3.5 h-3.5 text-slate-400" />}
                   <span>Salin</span>
                 </button>
               </div>
               <div className="bg-slate-900/90 border border-slate-800 rounded-xl p-3">
-                <p className="text-sm font-mono text-emerald-300 break-all select-all font-semibold">
+                <p className="text-sm font-mono text-purple-300 break-all select-all font-semibold">
                   {decryptionResult.plaintext}
                 </p>
               </div>
@@ -419,12 +435,12 @@ export default function RsaPage() {
             {/* Laporan verifikasi: status pemulihan setiap blok RSA dengan operasi M = C^d mod n */}
             <div className="bg-slate-950/90 border border-slate-800 rounded-2xl p-4 space-y-2">
               <h3 className="text-xs font-bold text-slate-200">
-                Laporan Verifikasi Pemulihan Blok Asimetris ($M_i = C_i^d \pmod n$)
+                Laporan Verifikasi Pemulihan Blok Asimetris (M_i = C_i^d mod n)
               </h3>
               <div className="space-y-1 text-xs font-mono">
                 {decryptionResult.traces.map((t) => (
                   <div key={t.chunkIndex} className="bg-slate-900/80 p-2 rounded-lg border border-slate-800 text-[11px] text-slate-300">
-                    <span className="text-emerald-400 font-bold">Blok #{t.chunkIndex}:</span> {t.status}
+                    <span className="text-purple-400 font-bold">Blok #{t.chunkIndex}:</span> {t.status}
                   </div>
                 ))}
               </div>

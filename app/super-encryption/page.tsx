@@ -123,7 +123,7 @@ export default function SuperEncryptionPage() {
             <div>
               <h2 className="text-base font-bold text-slate-100 mt-1">Multi-Layered Cryptosystem</h2>
               <p className="text-xs text-slate-400 mt-0.5 leading-relaxed">
-                Penggabungan estafet 4 lapisan algoritma secara berurutan: Substitusi Klasik (Vigenère) → Transposisi Klasik (Rail Fence) → Kunci Simetri (Rijndael/AES) → Kunci Publik (RSA).
+                Penggabungan estafet 4 lapisan algoritma secara berurutan: Substitusi Klasik (Vigenere) → Transposisi Klasik (Rail Fence) → Kunci Simetri (Rijndael/AES) → Kunci Publik (RSA).
               </p>
             </div>
           </div>

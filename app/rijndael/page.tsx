@@ -199,7 +199,7 @@ export default function RijndaelPage() {
           className="w-full py-3 bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-400 hover:to-indigo-400 text-slate-950 font-bold text-sm rounded-xl shadow-lg shadow-blue-500/20 transition-all flex items-center justify-center gap-2 active:scale-[0.99]"
         >
           <Lock className="w-4 h-4" />
-          {mode === 'encrypt' ? 'Jalankan Enkripsi' : 'Jalankan Dekripsi AES-256'}
+          {mode === 'encrypt' ? 'Jalankan Enkripsi' : 'Jalankan Dekripsi'}
         </button>
 
         {/* Area hasil enkripsi: muncul setelah enkripsi berhasil dijalankan */}
