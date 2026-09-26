@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import MobileShell from '@/components/MobileShell';
 import {
   encryptRijndael,
@@ -48,6 +48,17 @@ export default function RijndaelPage() {
   const [activeRound, setActiveRound] = useState<number>(1);
 
   const [showDetails, setShowDetails] = useState(true);
+
+  useEffect(() => {
+    handleProcess();
+  }, [inputText, passphrase, mode]);
+
+  // Pastikan jika pindah ke putaran 14 dan tab adalah 'mix' (karena round 14 tidak ada MixColumns), ubah tab ke 'sub'
+  useEffect(() => {
+    if (activeRound === 14 && activeStepTab === 'mix') {
+      setActiveStepTab('sub');
+    }
+  }, [activeRound, activeStepTab]);
 
   const handleProcess = async () => {
     if (!inputText.trim()) return;

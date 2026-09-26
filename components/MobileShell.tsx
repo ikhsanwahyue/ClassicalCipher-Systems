@@ -91,7 +91,7 @@ export default function MobileShell({
             <Shield className="w-5 h-5 text-white" />
           </div>
           <div>
-            <h1 className="font-bold text-slate-100 text-sm leading-tight">
+            <h1 className={`font-bold ${currentItem.textActive} text-sm leading-tight`}>
               {title || 'Crypto Solver'}
             </h1>
             <p className={`text-xs ${currentItem.textActive} font-medium`}>
