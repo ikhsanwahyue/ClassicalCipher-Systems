@@ -14,25 +14,14 @@ import {
 } from 'lucide-react';
 
 export default function RailFencePage() {
-  // State untuk menyimpan mode saat ini: 'encrypt' atau 'decrypt'
+
   const [mode, setMode] = useState<'encrypt' | 'decrypt'>('encrypt');
-
-  // State untuk menyimpan teks input dari pengguna
   const [inputText, setInputText] = useState('TRANSPOSISIZIGZAGRAILFENCE');
-
-  // State untuk menyimpan jumlah rel (k) — semakin banyak rel, semakin kompleks pola zig-zag
   const [rails, setRails] = useState<number>(3);
-
-  // State untuk menyimpan hasil enkripsi/dekripsi beserta data matriks zig-zag
   const [resultData, setResultData] = useState<RailFenceResult | null>(null);
-
-  // State untuk menandai apakah hasil sudah disalin ke clipboard
   const [copied, setCopied] = useState(false);
-
-  // State untuk menampilkan atau menyembunyikan matriks visualisasi zig-zag
   const [showMatrix, setShowMatrix] = useState(true);
 
-  // Fungsi utama: menjalankan transposisi Rail Fence atau pemulihan urutan asli
   const handleProcess = () => {
     if (!inputText.trim()) return;
     if (mode === 'encrypt') {
@@ -42,7 +31,6 @@ export default function RailFencePage() {
     }
   };
 
-  // Fungsi untuk menyalin hasil ke clipboard dengan umpan balik visual sementara
   const handleCopy = () => {
     if (resultData?.result) {
       navigator.clipboard.writeText(resultData.result);
@@ -55,7 +43,6 @@ export default function RailFencePage() {
     <MobileShell title="Rail Fence Cipher" subtitle="Transposisi Zig-Zag Klasik">
       <div className="space-y-4">
 
-        {/* Kartu penjelasan singkat algoritma Rail Fence untuk konteks presentasi */}
         <div className="bg-gradient-to-r from-emerald-950/60 to-slate-900 border border-emerald-500/30 rounded-2xl p-4 shadow-lg">
           <div className="flex items-start justify-between">
             <div>
@@ -67,7 +54,6 @@ export default function RailFencePage() {
           </div>
         </div>
 
-        {/* Tombol pilihan mode: Enkripsi (transposisi) atau Dekripsi (pemulihan urutan asli) */}
         <div className="grid grid-cols-2 p-1 bg-slate-950 rounded-xl border border-slate-800">
           <button
             onClick={() => {
@@ -97,10 +83,9 @@ export default function RailFencePage() {
           </button>
         </div>
 
-        {/* Area input teks — plaintext untuk enkripsi, ciphertext transposisi untuk dekripsi */}
         <div className="space-y-1.5">
           <label className="text-xs font-semibold text-slate-300 flex justify-between">
-            <span>{mode === 'encrypt' ? 'Plaintext' : 'Ciphertext'}</span>
+            <span>{mode === 'encrypt' ? 'Plaintext (P)' : 'Ciphertext (C)'}</span>
             <span className="text-[11px] text-slate-500 font-mono">{inputText.length} karakter</span>
           </label>
           <textarea
@@ -112,11 +97,10 @@ export default function RailFencePage() {
           />
         </div>
 
-        {/* Slider dan input angka untuk mengatur jumlah rel (k) — kunci transposisi Rail Fence */}
         <div className="space-y-1.5">
           <div className="flex items-center justify-between">
             <label className="text-xs font-semibold text-slate-300 flex items-center gap-1.5">
-              Jumlah Rel (K)
+              Kedalaman Rel (K)
             </label>
             <span className="text-emerald-400 font-mono font-bold text-xs"></span>
           </div>
@@ -142,7 +126,6 @@ export default function RailFencePage() {
           </div>
         </div>
 
-        {/* Tombol utama untuk menjalankan transposisi atau pemulihan urutan teks asli */}
         <button
           onClick={handleProcess}
           className="w-full py-3 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 font-bold text-sm rounded-xl shadow-lg shadow-emerald-500/20 transition-all flex items-center justify-center gap-2 active:scale-[0.99]"
@@ -151,7 +134,6 @@ export default function RailFencePage() {
           {mode === 'encrypt' ? 'Jalankan Enkripsi' : 'Jalankan Dekripsi'}
         </button>
 
-        {/* Area hasil: ditampilkan hanya setelah proses dijalankan */}
         {resultData && (
           <div className="space-y-4 pt-2">
             <div className="bg-slate-950 border border-emerald-500/40 rounded-2xl p-4 shadow-xl space-y-3">
@@ -186,7 +168,6 @@ export default function RailFencePage() {
                 </p>
               </div>
 
-              {/* Rincian karakter yang dibaca dari masing-masing rel horizontal */}
               <div className="space-y-2 pt-1 border-t border-slate-800/80">
                 <p className="text-[11px] font-semibold text-slate-400">Urutan Karakter per Rel</p>
                 <div className="grid grid-cols-1 gap-2">
@@ -203,7 +184,6 @@ export default function RailFencePage() {
               </div>
             </div>
 
-            {/* Matriks visualisasi pola zig-zag: menampilkan posisi karakter pada setiap rel */}
             <div className="bg-slate-950/80 border border-slate-800 rounded-2xl p-4 space-y-3">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">

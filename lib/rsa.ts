@@ -18,6 +18,12 @@ export interface RsaChunkTrace {
   operation: string;
   cipherBase64: string;
   cipherLengthBytes: number;
+  mathTrace?: {
+    cInteger: string;
+    mInteger: string;
+    nInteger: string;
+    eInteger: string;
+  };
 }
 
 export interface RsaEncryptionResult {
@@ -135,10 +141,27 @@ export async function encryptRsa(
   const encryptedChunks: string[] = [];
   const chunkTraces: RsaChunkTrace[] = [];
 
+  // Ambil modulus (n) untuk mathematical trace
+  const jwkPublic = await crypto.subtle.exportKey('jwk', publicKey);
+  let nInteger = '';
+  let eInteger = '65537';
+  if (jwkPublic.n) {
+    const b64 = jwkPublic.n.replace(/-/g, '+').replace(/_/g, '/');
+    const bin = atob(b64);
+    let hex = '';
+    for(let i=0; i<bin.length; i++) hex += bin.charCodeAt(i).toString(16).padStart(2, '0');
+    nInteger = BigInt('0x' + hex).toString();
+  }
+
   let chunkIdx = 1;
   for (let i = 0; i < textBytes.length; i += CHUNK_SIZE) {
     const chunk = textBytes.slice(i, i + CHUNK_SIZE);
     const chunkSnippet = new TextDecoder().decode(chunk);
+    
+    // M as integer (Raw M, before OAEP padding)
+    let mHex = '';
+    for(let j=0; j<chunk.length; j++) mHex += chunk[j].toString(16).padStart(2, '0');
+    const mInteger = BigInt('0x' + (mHex || '00')).toString();
 
     const encryptedBuffer = await crypto.subtle.encrypt(
       { name: 'RSA-OAEP' },
@@ -149,6 +172,12 @@ export async function encryptRsa(
     const chunkBase64 = btoa(String.fromCharCode(...new Uint8Array(encryptedBuffer)));
     encryptedChunks.push(chunkBase64);
 
+    // C as integer
+    const cBytes = new Uint8Array(encryptedBuffer);
+    let cHex = '';
+    for(let j=0; j<cBytes.length; j++) cHex += cBytes[j].toString(16).padStart(2, '0');
+    const cInteger = BigInt('0x' + cHex).toString();
+
     chunkTraces.push({
       chunkIndex: chunkIdx++,
       plainByteLength: chunk.length,
@@ -157,6 +186,12 @@ export async function encryptRsa(
       operation: 'C_i = (M_i_padded)^e mod n, dengan e = 65537',
       cipherBase64: chunkBase64,
       cipherLengthBytes: 256, // 2048 bit modulus = 256 bytes per encrypted block
+      mathTrace: {
+        cInteger,
+        mInteger,
+        nInteger,
+        eInteger
+      }
     });
   }
 

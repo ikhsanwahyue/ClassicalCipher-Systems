@@ -25,6 +25,8 @@ export interface RoundTransformationSimulation {
   roundKeyPreview: string[][];
 }
 
+import { simulateAllRounds, RoundTrace } from './rijndael_simulate';
+
 export interface RijndaelEncryptionResult {
   ciphertextBase64: string;
   ciphertextHex: string;
@@ -37,6 +39,7 @@ export interface RijndaelEncryptionResult {
   roundsCount: number;
   stateMatrix: StateMatrixCell[][];
   simulation: RoundTransformationSimulation;
+  fullSimulation: RoundTrace[];
 }
 
 // AES S-Box Standar FIPS 197
@@ -225,6 +228,7 @@ export async function encryptRijndael(
   );
 
   const simulation = simulateRijndaelRound(first16Bytes, key16Bytes);
+  const fullSimulation = simulateAllRounds(first16Bytes, Array.from(new Uint8Array(rawKeyData)));
 
   return {
     ciphertextBase64,
@@ -238,6 +242,7 @@ export async function encryptRijndael(
     roundsCount: 14,
     stateMatrix,
     simulation,
+    fullSimulation,
   };
 }
 

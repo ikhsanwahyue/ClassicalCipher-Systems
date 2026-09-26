@@ -26,51 +26,51 @@ export default function MobileShell({
   const pathname = usePathname();
 
   const navItems = [
-    { 
-      href: '/vigenere', 
-      label: 'Vigenere', 
-      icon: FileCode2, 
-      color: 'cyan',
+    {
+      href: '/vigenere',
+      label: 'Vigenere',
+      icon: FileCode2,
+      dot: 'bg-cyan-500',
       gradient: 'from-cyan-600 to-sky-400',
       shadow: 'shadow-cyan-500/20',
       textActive: 'text-cyan-400',
       bgActive: 'bg-cyan-500/15 ring-1 ring-cyan-500/30'
     },
-    { 
-      href: '/rail-fence', 
-      label: 'Rail Fence', 
-      icon: Grid, 
-      color: 'emerald',
+    {
+      href: '/rail-fence',
+      label: 'Rail Fence',
+      icon: Grid,
+      dot: 'bg-emerald-500',
       gradient: 'from-emerald-600 to-teal-400',
       shadow: 'shadow-emerald-500/20',
       textActive: 'text-emerald-400',
       bgActive: 'bg-emerald-500/15 ring-1 ring-emerald-500/30'
     },
-    { 
-      href: '/rijndael', 
-      label: 'Rijndael', 
-      icon: Lock, 
-      color: 'blue',
+    {
+      href: '/rijndael',
+      label: 'Rijndael',
+      icon: Lock,
+      dot: 'bg-blue-500',
       gradient: 'from-blue-600 to-indigo-400',
       shadow: 'shadow-blue-500/20',
       textActive: 'text-blue-400',
       bgActive: 'bg-blue-500/15 ring-1 ring-blue-500/30'
     },
-    { 
-      href: '/rsa', 
-      label: 'RSA', 
-      icon: KeyRound, 
-      color: 'purple',
+    {
+      href: '/rsa',
+      label: 'RSA',
+      icon: KeyRound,
+      dot: 'bg-purple-500',
       gradient: 'from-purple-600 to-fuchsia-400',
       shadow: 'shadow-purple-500/20',
       textActive: 'text-purple-400',
       bgActive: 'bg-purple-500/15 ring-1 ring-purple-500/30'
     },
-    { 
-      href: '/super-encryption', 
-      label: 'Super', 
-      icon: Layers, 
-      color: 'amber',
+    {
+      href: '/super-encryption',
+      label: 'Super',
+      icon: Layers,
+      dot: 'bg-amber-500',
       gradient: 'from-amber-600 to-orange-400',
       shadow: 'shadow-amber-500/20',
       textActive: 'text-amber-400',
@@ -100,7 +100,7 @@ export default function MobileShell({
           </div>
         </div>
         <div className="flex items-center space-x-2">
-          <span className={`w-2.5 h-2.5 rounded-full bg-${currentItem.color}-500 animate-pulse`} />
+          <span className={`w-2.5 h-2.5 rounded-full ${currentItem.dot} animate-pulse`} />
           <span className={`text-[11px] font-mono ${currentItem.textActive} uppercase tracking-wider`}>Client-Safe</span>
         </div>
       </header>
@@ -119,18 +119,16 @@ export default function MobileShell({
             <Link
               key={item.href}
               href={item.href}
-              className={`flex-1 flex flex-col items-center justify-center py-1 px-1 rounded-xl transition-all duration-200 ${
-                isActive
-                  ? `${item.textActive} font-semibold scale-105`
-                  : 'text-slate-400 hover:text-slate-200'
-              }`}
+              className={`flex-1 flex flex-col items-center justify-center py-1 px-1 rounded-xl transition-all duration-200 ${isActive
+                ? `${item.textActive} font-semibold scale-105`
+                : 'text-slate-400 hover:text-slate-200'
+                }`}
             >
               <div
-                className={`p-1.5 rounded-xl transition-all ${
-                  isActive ? item.bgActive : ''
-                }`}
+                className={`p-1.5 rounded-xl transition-all ${isActive ? item.bgActive : ''
+                  }`}
               >
-                <NavIcon className="w-4.5 h-4.5" />
+                <NavIcon className="w-[18px] h-[18px]" />
               </div>
               <span className="text-[9px] mt-0.5 tracking-tight font-medium">{item.label}</span>
             </Link>
