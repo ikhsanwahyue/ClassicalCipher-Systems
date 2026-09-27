@@ -364,73 +364,125 @@ export default function SuperEncryptionPage() {
                         </div>
 
                         {isExpanded && (
-                          <div className="p-3 pt-0 space-y-2 border-t border-slate-800/50 mt-1">
+                            <div className="p-3 pt-0 space-y-2.5 border-t border-slate-800/50 mt-1">
 
-                            <p className="text-[10px] text-slate-400 font-mono">
-                              Kunci: <span className={`font-semibold ${themeColor}`}>{stage.keyUsed}</span>
-                            </p>
+                            <div className="p-2 bg-slate-950/90 rounded-lg border border-slate-800 text-[10px] space-y-1">
+                              <p className="text-slate-400">
+                                <span className="text-slate-500 font-semibold">Kategori:</span> <span className="text-slate-300 font-medium">{stage.category}</span>
+                              </p>
+                              <p className="text-slate-400">
+                                <span className="text-slate-500 font-semibold">Kunci Digunakan:</span> <span className={`font-mono font-semibold ${themeColor}`}>{stage.keyUsed}</span>
+                              </p>
+                              <p className="text-slate-400 leading-relaxed text-[9px] pt-1 border-t border-slate-900">
+                                {stage.description}
+                              </p>
+                            </div>
 
                             <div className="grid grid-cols-2 gap-2 text-[9px] font-mono">
                               <div className="bg-slate-950/80 p-2 rounded-lg border border-slate-800/80">
                                 <span className="text-slate-500 block mb-1">Masukan (Input)</span>
-                                <p className="text-slate-300 truncate">{stage.input}</p>
+                                <p className="text-slate-300 break-all">{stage.input}</p>
                               </div>
                               <div className="bg-slate-950/80 p-2 rounded-lg border border-slate-800/80">
                                 <span className="text-slate-500 block mb-1">Keluaran (Output)</span>
-                                <p className="text-amber-300 font-bold truncate">{stage.output}</p>
+                                <p className="text-amber-300 font-bold break-all">{stage.output}</p>
                               </div>
                             </div>
 
-                            {/* Vigenere sebelumnya tidak punya panel detail khusus seperti 3 lapisan
-                                lain di bawah — ini melengkapi bagian yang hilang itu. Penjelasan
-                                konsep dipakai karena field metadata Vigenere (mis. keystream per
-                                huruf) belum terlihat di tipe PipelineStageInfo yang dibagikan;
-                                kirim lib/super-encryption.ts kalau field itu sudah ada dan Anda
-                                ingin tabel keystream sebenarnya ditampilkan di sini. */}
+                            {/* 1. Vigenere Detail Box */}
                             {stage.name.includes('Vigenere') && (
-                              <div className="bg-slate-950/80 p-2 rounded-lg border border-cyan-500/20 text-[9px] font-mono text-cyan-300/80 space-y-1">
-                                <p className="font-bold text-cyan-400 flex items-center gap-1">
-                                  <Key className="w-3 h-3" /> Substitusi Polyalphabetic
+                              <div className="bg-slate-950/80 p-2.5 rounded-lg border border-cyan-500/20 text-[9px] font-mono text-cyan-300/90 space-y-1.5">
+                                <p className="font-bold text-cyan-400 flex items-center justify-between">
+                                  <span className="flex items-center gap-1"><Key className="w-3 h-3" /> Substitusi Polialfabetik</span>
+                                  <span className="text-[8px] bg-cyan-950 px-1.5 py-0.5 rounded border border-cyan-800/50">{stage.metadata?.formula}</span>
                                 </p>
-                                <p className="text-cyan-300/70">
-                                  Tiap huruf plaintext digeser sesuai huruf kunci &quot;<span className="font-semibold">{stage.keyUsed}</span>&quot; yang diulang (mod 26) di sepanjang teks.
-                                </p>
-                                {(stage.metadata as any)?.keystream && (
-                                  <p className="break-all pt-1 border-t border-cyan-900/40">
-                                    Keystream: {(stage.metadata as any).keystream}
+                                {stage.metadata?.keystream && (
+                                  <p className="text-slate-400 break-all text-[8.5px]">
+                                    <span className="text-cyan-400 font-semibold">Keystream:</span> {stage.metadata.keystream}
                                   </p>
+                                )}
+                                {stage.metadata?.sampleSteps && stage.metadata.sampleSteps.length > 0 && (
+                                  <div className="space-y-0.5 pt-1 border-t border-cyan-900/40 text-[8px] text-slate-300">
+                                    <span className="text-cyan-400 font-bold block mb-0.5">Sampel Transformasi Karakter:</span>
+                                    {stage.metadata.sampleSteps.map((step, sIdx) => (
+                                      <div key={sIdx} className="bg-slate-900/80 px-1.5 py-0.5 rounded border border-slate-800 flex justify-between">
+                                        <span>#{sIdx + 1}</span>
+                                        <span className="text-cyan-300 font-medium">{step}</span>
+                                      </div>
+                                    ))}
+                                  </div>
                                 )}
                               </div>
                             )}
 
-                            {stage.metadata?.railMatrix && (
-                              <div className="bg-slate-950/80 p-2 rounded-lg border border-emerald-500/20 text-[9px] font-mono overflow-x-auto text-emerald-300/80">
-                                <p className="font-bold text-emerald-400 mb-1 flex items-center gap-1">
-                                  <Grid className="w-3 h-3" /> Pola Zig-Zag Transposisi
+                            {/* 2. Rail Fence Detail Box */}
+                            {stage.name.includes('Rail Fence') && (
+                              <div className="bg-slate-950/80 p-2.5 rounded-lg border border-emerald-500/20 text-[9px] font-mono text-emerald-300/90 space-y-2">
+                                <p className="font-bold text-emerald-400 flex items-center justify-between">
+                                  <span className="flex items-center gap-1"><Grid className="w-3 h-3" /> Matriks Rel & Urutan Transposisi</span>
+                                  <span className="text-[8px] bg-emerald-950 px-1.5 py-0.5 rounded border border-emerald-800/50">{stage.metadata?.formula}</span>
                                 </p>
-                                {stage.metadata.railMatrix.slice(0, 3).map((row, r) => (
-                                  <div key={r} className="whitespace-nowrap">Rel {r + 1}: {row.slice(0, 40).map(c => c || '·').join(' ')}</div>
-                                ))}
+                                {stage.metadata?.railMatrix && (
+                                  <div className="overflow-x-auto text-[8.5px] bg-slate-900/80 p-2 rounded-lg border border-slate-800">
+                                    {stage.metadata.railMatrix.slice(0, 4).map((row, r) => (
+                                      <div key={r} className="whitespace-nowrap leading-relaxed">
+                                        <span className="text-emerald-400 font-bold mr-1.5">Rel {r + 1}:</span>
+                                        <span className="text-slate-300">{row.slice(0, 36).map(c => c || '·').join(' ')}</span>
+                                        {row.length > 36 && <span className="text-slate-500 ml-1">...</span>}
+                                      </div>
+                                    ))}
+                                  </div>
+                                )}
+                                {stage.metadata?.railSequences && (
+                                  <div className="space-y-1 text-[8.5px]">
+                                    <span className="text-emerald-400 font-semibold block">Pembacaan Per Rel (Cipher Subsequence):</span>
+                                    <div className="grid grid-cols-1 gap-1">
+                                      {stage.metadata.railSequences.map((seq) => (
+                                        <div key={seq.railIndex} className="bg-slate-900/60 px-2 py-1 rounded border border-slate-800 flex justify-between gap-2">
+                                          <span className="text-emerald-400 font-bold shrink-0">Rel #{seq.railIndex + 1}:</span>
+                                          <span className="text-slate-300 truncate max-w-[240px] font-medium">{seq.chars}</span>
+                                        </div>
+                                      ))}
+                                    </div>
+                                  </div>
+                                )}
                               </div>
                             )}
 
-                            {stage.metadata?.ivHex && (
-                              <div className="bg-slate-950/80 p-2 rounded-lg border border-blue-500/20 text-[9px] font-mono text-blue-300/80 space-y-1">
-                                <p className="font-bold text-blue-400 flex items-center gap-1">
-                                  <Cpu className="w-3 h-3" /> Parameter AES-256-GCM
+                            {/* 3. Rijndael Detail Box */}
+                            {stage.name.includes('Rijndael') && (
+                              <div className="bg-slate-950/80 p-2.5 rounded-lg border border-blue-500/20 text-[9px] font-mono text-blue-300/90 space-y-1.5">
+                                <p className="font-bold text-blue-400 flex items-center justify-between">
+                                  <span className="flex items-center gap-1"><Cpu className="w-3 h-3" /> Parameter Kriptografi AES-256-GCM</span>
+                                  <span className="text-[8px] bg-blue-950 px-1.5 py-0.5 rounded border border-blue-800/50">14 Putaran SPN</span>
                                 </p>
-                                <p className="truncate">IV: {stage.metadata.ivHex}</p>
-                                <p className="truncate">Tag: {stage.metadata.authTagHex}</p>
+                                {stage.metadata?.ivHex && (
+                                  <div className="p-1.5 bg-slate-900/80 rounded border border-slate-800 text-[8.5px] space-y-0.5">
+                                    <p className="text-slate-400 truncate"><span className="text-blue-400 font-semibold">IV (12 Byte):</span> {stage.metadata.ivHex}</p>
+                                    <p className="text-slate-400 truncate"><span className="text-blue-400 font-semibold">Auth Tag (16 Byte):</span> {stage.metadata.authTagHex}</p>
+                                  </div>
+                                )}
+                                <p className="text-slate-400 text-[8.5px]">{stage.metadata?.extraInfo}</p>
+                                {stage.metadata?.formula && (
+                                  <p className="text-[8px] text-blue-300/70 pt-1 border-t border-blue-900/40">Rumus: {stage.metadata.formula}</p>
+                                )}
                               </div>
                             )}
 
-                            {stage.metadata?.rsaChunksCount && (
-                              <div className="bg-slate-950/80 p-2 rounded-lg border border-purple-500/20 text-[9px] font-mono text-purple-300/80 space-y-1">
-                                <p className="font-bold text-purple-400 flex items-center gap-1">
-                                  <Binary className="w-3 h-3" /> Parameter RSA-OAEP
+                            {/* 4. RSA Detail Box */}
+                            {stage.name.includes('RSA') && (
+                              <div className="bg-slate-950/80 p-2.5 rounded-lg border border-purple-500/20 text-[9px] font-mono text-purple-300/90 space-y-1.5">
+                                <p className="font-bold text-purple-400 flex items-center justify-between">
+                                  <span className="flex items-center gap-1"><Binary className="w-3 h-3" /> Parameter RSA-OAEP (2048 bit)</span>
+                                  <span className="text-[8px] bg-purple-950 px-1.5 py-0.5 rounded border border-purple-800/50">{stage.metadata?.rsaChunksCount} Blok</span>
                                 </p>
-                                <p>{stage.metadata.extraInfo}</p>
-                                <p>Eksekusi: {stage.metadata.formula}</p>
+                                <p className="text-slate-300 text-[8.5px]">{stage.metadata?.extraInfo}</p>
+                                {stage.metadata?.formula && (
+                                  <div className="p-1.5 bg-slate-900/80 rounded border border-slate-800 text-[8.5px] flex items-center justify-between">
+                                    <span className="text-slate-500">Operasi Modular:</span>
+                                    <span className="text-purple-300 font-bold">{stage.metadata.formula}</span>
+                                  </div>
+                                )}
                               </div>
                             )}
 

@@ -22,9 +22,13 @@ export interface SuperKeys {
 
 export interface DetailedStageMetadata {
   formula?: string;
+  keystream?: string;
+  sampleSteps?: string[];
   railMatrix?: string[][];
+  railSequences?: { railIndex: number; chars: string }[];
   ivHex?: string;
   authTagHex?: string;
+  keyDerivation?: string;
   rsaChunksCount?: number;
   extraInfo?: string;
 }
@@ -61,6 +65,7 @@ export async function superEncryptPipeline(
 
   // Stage 1: Vigenère Cipher (Substitusi Klasik)
   const s1 = encryptVigenere(plainText, keys.vigenereKey || 'KUNCI');
+  const sampleVigenere = s1.steps.slice(0, 5).map(s => `${s.plainChar} (${s.plainVal}) + ${s.keyChar} (${s.keyVal}) mod 26 = ${s.cipherChar} (${s.cipherVal})`);
   stages.push({
     stage: 1,
     name: 'Vigenère Cipher',
@@ -68,10 +73,12 @@ export async function superEncryptPipeline(
     input: plainText,
     output: s1.result,
     keyUsed: `Kata Kunci: "${s1.cleanKey}"`,
-    description: `Menggeser alfabet plaintext secara polialfabetik berdasarkan kunci "${s1.cleanKey}".`,
+    description: `Substitusi polialfabetik dengan menjumlahkan indeks ASCII huruf terhadap kata kunci berulang secara modular 26: C_i = (P_i + K_i) mod 26.`,
     metadata: {
       formula: s1.formula,
-      extraInfo: `${s1.steps.length} Karakter diproses modular 26.`,
+      keystream: s1.steps.map(s => s.keyChar).slice(0, 30).join('') + (s1.steps.length > 30 ? '...' : ''),
+      sampleSteps: sampleVigenere,
+      extraInfo: `${s1.steps.length} Karakter diproses substitusi dinamis.`,
     },
   });
 
@@ -85,11 +92,12 @@ export async function superEncryptPipeline(
     input: s1.result,
     output: s2.result,
     keyUsed: `Kedalaman Rel (k): ${railsCount}`,
-    description: `Menyusun karakter secara zig-zag pada ${railsCount} rel dan membaca baris per baris.`,
+    description: `Transposisi geometris dengan menyusun karakter ke dalam pola gelombang zig-zag melintasi ${railsCount} rel, lalu membaca string hasil baris per baris.`,
     metadata: {
       formula: s2.formula,
       railMatrix: s2.matrix,
-      extraInfo: `${s2.railSequences.length} Rel horizontal dibaca baris demi baris.`,
+      railSequences: s2.railSequences,
+      extraInfo: `${s2.railSequences.length} Rel horizontal dibaca baris demi baris (${s1.result.length} karakter).`,
     },
   });
 
@@ -101,12 +109,14 @@ export async function superEncryptPipeline(
     category: 'Simetri Modern',
     input: s2.result,
     output: s3.ciphertextBase64,
-    keyUsed: `Passphrase: "${keys.rijndaelKey}" (Derived via SHA-256)`,
-    description: `Mengenkripsi ciphertext transposisi dengan AES-256-GCM terotentikasi & 96-bit IV.`,
+    keyUsed: `Passphrase: "${keys.rijndaelKey}" (SHA-256 Digest 256-bit)`,
+    description: `Transformasi SPN modern 14 putaran (SubBytes, ShiftRows, MixColumns, AddRoundKey) dengan mode Galois/Counter Mode (GCM) dan IV 96-bit acak.`,
     metadata: {
       ivHex: s3.ivHex,
       authTagHex: s3.authTagHex,
-      extraInfo: `14 Putaran Rijndael SPN (SubBytes, ShiftRows, MixColumns, AddRoundKey).`,
+      keyDerivation: s3.keyDerivation,
+      formula: 'Ciphertext = AES-256-GCM(IV, Plaintext, K_256) ∥ AuthTag_128',
+      extraInfo: `14 Putaran Rijndael SPN (Confusion & Diffusion Standar NIST).`,
     },
   });
 
@@ -122,12 +132,12 @@ export async function superEncryptPipeline(
     category: 'Nirsimetri Modern',
     input: s3.ciphertextBase64,
     output: s4.ciphertextBase64,
-    keyUsed: 'Kunci Publik RSA-OAEP 2048-bit (PEM)',
-    description: `Mengamankan payload AES menggunakan Kunci Publik asimetris berstandar RSA-OAEP 2048-bit.`,
+    keyUsed: 'Kunci Publik RSA 2048-bit (e = 65537, n = 2048-bit Modulus)',
+    description: `Membagi ciphertext AES menjadi ${s4.chunksCount} blok chunk, membungkusnya dengan OAEP Padding (SHA-256 + MGF1), lalu melakukan enkripsi eksponensial modular: C_i = (M_padded)^e mod n.`,
     metadata: {
       rsaChunksCount: s4.chunksCount,
-      formula: 'C_i = (M_i)^e mod n (e = 65537)',
-      extraInfo: `${s4.chunksCount} Blok RSA dipad dengan OAEP SHA-256.`,
+      formula: 'C_i = (OAEP_Pad(M_i))^65537 mod n',
+      extraInfo: `${s4.chunksCount} Blok RSA 2048-bit diproses dengan OAEP Padding SHA-256.`,
     },
   });
 
@@ -158,12 +168,12 @@ export async function superDecryptPipeline(
     category: 'Nirsimetri Modern',
     input: superCiphertext,
     output: s1.plaintext,
-    keyUsed: 'Kunci Privat RSA-OAEP 2048-bit (PEM)',
-    description: `Mendekripsi lapisan asimetris RSA untuk memperoleh ciphertext AES terotentikasi.`,
+    keyUsed: 'Kunci Privat RSA 2048-bit (d = Eksponen Privat, n = Modulus)',
+    description: `Mendekripsi ${s1.chunksCount} blok RSA asimetris menggunakan eksponen privat d (M_padded = C^d mod n), lalu memverifikasi & melepas OAEP unpadding untuk memulihkan payload AES.`,
     metadata: {
       rsaChunksCount: s1.chunksCount,
-      formula: 'M_i = (C_i)^d mod n',
-      extraInfo: `Berhasil memulihkan ${s1.chunksCount} blok RSA ke payload AES.`,
+      formula: 'M_i = (C_i)^d mod n -> Unpad OAEP',
+      extraInfo: `Berhasil memulihkan ${s1.chunksCount} blok RSA menjadi string ciphertext AES.`,
     },
   });
 
@@ -175,9 +185,10 @@ export async function superDecryptPipeline(
     category: 'Simetri Modern',
     input: s1.plaintext,
     output: s2,
-    keyUsed: `Passphrase: "${keys.rijndaelKey}"`,
-    description: `Mendekripsi AES-256-GCM dan memverifikasi integritas autentikasi untuk memulihkan teks transposisi.`,
+    keyUsed: `Passphrase: "${keys.rijndaelKey}" (Kunci SHA-256)`,
+    description: `Mengekstrak IV 12-byte dan Authentication Tag 16-byte, memverifikasi integritas GHASH, lalu melakukan inversi 14 putaran AES-CTR untuk memulihkan teks transposisi.`,
     metadata: {
+      formula: 'Plaintext = AES-256-CTR(IV, Ciphertext, K_256) [Validasi GHASH Tag]',
       extraInfo: 'Tag GMAC 128-bit terverifikasi valid, kunci simetris cocok.',
     },
   });
@@ -192,16 +203,18 @@ export async function superDecryptPipeline(
     input: s2,
     output: s3.result,
     keyUsed: `Kedalaman Rel (k): ${railsCount}`,
-    description: `Merekonstruksi posisi matriks zig-zag ${railsCount} rel untuk memulihkan urutan asli Vigenère.`,
+    description: `Menghitung frekuensi slot pada tiap rel matriks zig-zag ${railsCount} rel, menempatkan kembali karakter baris per baris, dan membaca jalur zig-zag untuk memulihkan susunan Vigenère.`,
     metadata: {
       formula: s3.formula,
       railMatrix: s3.matrix,
+      railSequences: s3.railSequences,
       extraInfo: `Rekonstruksi zig-zag diagonal ${railsCount} rel berhasil.`,
     },
   });
 
   // Stage 4: Vigenère Decrypt (Substitusi Klasik)
   const s4 = decryptVigenere(s3.result, keys.vigenereKey || 'KUNCI');
+  const sampleVigenereDec = s4.steps.slice(0, 5).map(s => `${s.plainChar} (${s.plainVal}) - ${s.keyChar} (${s.keyVal}) mod 26 = ${s.cipherChar} (${s.cipherVal})`);
   stages.push({
     stage: 4,
     name: 'Vigenère Decrypt',
@@ -209,9 +222,11 @@ export async function superDecryptPipeline(
     input: s3.result,
     output: s4.result,
     keyUsed: `Kata Kunci: "${s4.cleanKey}"`,
-    description: `Membalikkan pergeseran substitusi Vigenère untuk meregenerasi plaintext asli 100%.`,
+    description: `Membalikkan substitusi pergeseran polialfabetik dengan mengurangkan nilai kunci: P_i = (C_i - K_i + 26) mod 26 untuk merekonstruksi plaintext asli seutuhnya.`,
     metadata: {
       formula: s4.formula,
+      keystream: s4.steps.map(s => s.keyChar).slice(0, 30).join('') + (s4.steps.length > 30 ? '...' : ''),
+      sampleSteps: sampleVigenereDec,
       extraInfo: 'Pergeseran modular dibalikkan (-K mod 26) ke teks asli.',
     },
   });

@@ -264,9 +264,11 @@ export async function decryptRsa(
       decryptedChunks.push(decBytes);
       totalLength += decBytes.length;
 
+      const decHex = Array.from(decBytes).map(b => b.toString(16).padStart(2, '0')).join(' ');
+      const decTextPreview = new TextDecoder().decode(decBytes);
       traces.push({
         chunkIndex: idx + 1,
-        status: `M_${idx + 1} = (C_${idx + 1})^d mod n -> Unmasked OAEP -> ${decBytes.length} Bytes`,
+        status: `Blok #${idx + 1} Terdekripsi (${decBytes.length} B): "${decTextPreview.length > 25 ? decTextPreview.substring(0, 25) + '...' : decTextPreview}" | Hex: ${decHex.slice(0, 24)}...`,
       });
     } catch (err) {
       throw new Error(`Gagal mendekripsi blok #${idx + 1}: Kunci privat tidak cocok.`);

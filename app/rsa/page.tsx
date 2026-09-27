@@ -334,14 +334,15 @@ export default function RsaPage() {
               </div>
               <div className="text-[11px] text-slate-400 font-mono flex items-center justify-between pt-1 border-t border-slate-800/80">
                 <span>{encryptionResult.chunksCount} Blok Chunk</span>
+                <span>Modulus: 2048-bit (256 Byte/Blok)</span>
               </div>
             </div>
 
-            <div className="bg-slate-950/80 border border-slate-800 rounded-2xl p-4 space-y-3">
-              <div className="flex items-center justify-between">
+            <div className="bg-slate-950/90 border border-purple-500/30 rounded-2xl p-4 space-y-3 shadow-xl">
+              <div className="flex items-center justify-between pb-2 border-b border-slate-800">
                 <div className="flex items-center gap-2">
-                  <TableIcon className="w-4 h-4 text-purple-400" />
-                  <h3 className="text-xs font-bold text-slate-200">Detail Proses & Tracing Blok</h3>
+                  <Shield className="w-4 h-4 text-purple-400" />
+                  <h3 className="text-xs font-bold text-slate-200">Alur Proses Enkripsi RSA-OAEP 2048</h3>
                 </div>
                 <button
                   onClick={() => setShowDetails(!showDetails)}
@@ -352,61 +353,112 @@ export default function RsaPage() {
               </div>
 
               {showDetails && (
-                <div className="space-y-4 pt-1">
+                <div className="space-y-3 font-mono text-xs pt-1">
 
-                  <div className="grid grid-cols-1 gap-2 text-[10px] font-mono">
-                    <div className="bg-slate-900/60 p-2 rounded-lg border border-slate-800">
-                      <p className="text-slate-500 mb-1">Modulus (n) - {encryptionResult.mathParameters.keySize}:</p>
-                      <p className="text-purple-300 font-bold break-all max-h-20 overflow-y-auto custom-scrollbar">{encryptionResult.chunkTraces[0]?.mathTrace?.nInteger}</p>
+                  {/* Langkah 1 */}
+                  <div className="bg-slate-900/90 border border-slate-800 rounded-xl p-3.5 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="px-2 py-0.5 rounded bg-purple-500/20 text-purple-300 font-bold text-[11px] border border-purple-500/30">
+                        Langkah 1
+                      </span>
+                      <span className="text-slate-400 text-[10px]">Data Segmentation</span>
+                    </div>
+                    <p className="text-slate-200 font-bold text-xs">Pembagian Blok (Chunking Teks)</p>
+                    <p className="text-[10px] text-slate-400 font-sans leading-relaxed">
+                      Plaintext berukuran {inputText.length} karakter dibagi menjadi blok-blok maksimal 190 byte agar muat dienkripsi dengan modulus 2048-bit (256 byte).
+                    </p>
+                    <div className="grid grid-cols-3 gap-1.5 text-[10px] pt-1">
+                      <div className="bg-slate-950 p-2 rounded-lg border border-slate-800 text-center">
+                        <span className="text-slate-500 block text-[9px]">Kapasitas Blok</span>
+                        <span className="text-purple-300 font-bold">190 Byte</span>
+                      </div>
+                      <div className="bg-slate-950 p-2 rounded-lg border border-slate-800 text-center">
+                        <span className="text-slate-500 block text-[9px]">Jumlah Blok</span>
+                        <span className="text-slate-200 font-bold">{encryptionResult.chunksCount} Chunk</span>
+                      </div>
+                      <div className="bg-slate-950 p-2 rounded-lg border border-purple-800/40 text-center">
+                        <span className="text-slate-500 block text-[9px]">Ukuran Terenkripsi</span>
+                        <span className="text-purple-300 font-bold">256 Byte/Blok</span>
+                      </div>
                     </div>
                   </div>
 
-                  <div className="space-y-2">
-                    <ProcessStep
-                      index={1}
-                      title="Chunking & OAEP Padding"
-                      description={`Membagi teks ke dalam ${encryptionResult.chunksCount} blok, kemudian menerapkan padding OAEP: 0x00 ∥ maskedSeed ∥ maskedDB.`}
-                    />
-                    <ProcessStep
-                      index={2}
-                      title="Modular Exponentiation"
-                      description={'Melakukan operasi eksponensial modular menggunakan kunci publik untuk menghasilkan ciphertext integer (C = M^e mod n).'}
-                    />
-                    <ProcessStep
-                      index={3}
-                      title="Penggabungan & Encoding Base64"
-                      description="Menggabungkan seluruh blok ciphertext hasil enkripsi lalu mengonversikannya ke format Base64 sebagai payload akhir."
-                    />
+                  {/* Langkah 2 */}
+                  <div className="bg-slate-900/90 border border-slate-800 rounded-xl p-3.5 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="px-2 py-0.5 rounded bg-purple-500/20 text-purple-300 font-bold text-[11px] border border-purple-500/30">
+                        Langkah 2
+                      </span>
+                      <span className="text-slate-400 text-[10px]">Probabilistic Padding</span>
+                    </div>
+                    <p className="text-slate-200 font-bold text-xs">Penerapan OAEP (Optimal Asymmetric Encryption Padding)</p>
+                    <p className="text-[10px] text-slate-400 font-sans leading-relaxed">
+                      Menggunakan SHA-256 dan Mask Generation Function (MGF1) untuk menambahkan keacakan (*seed random*), mencegah serangan Coppersmith dan chosen-ciphertext.
+                    </p>
+                    <div className="bg-slate-950 p-2.5 rounded-lg border border-slate-800 space-y-1 text-[10px]">
+                      <span className="text-slate-500 block">Struktur Blok Padding (256 Byte):</span>
+                      <span className="text-purple-300 font-mono block break-all font-semibold">0x00 ∥ maskedSeed (32B) ∥ maskedDB (223B)</span>
+                    </div>
                   </div>
 
-                  <div className="space-y-4">
-                    <div className="text-[11px] font-bold text-slate-300 mb-1 flex items-center gap-2">
+                  {/* Langkah 3 */}
+                  <div className="bg-slate-900/90 border border-purple-700/40 rounded-xl p-3.5 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="px-2 py-0.5 rounded bg-purple-500/20 text-purple-300 font-bold text-[11px] border border-purple-500/30">
+                        Langkah 3
+                      </span>
+                      <span className="text-purple-400 text-[10px] font-bold">Modular Arithmetic</span>
+                    </div>
+                    <p className="text-slate-200 font-bold text-xs">Eksponensial Modular Kunci Publik</p>
+                    <p className="text-[10px] text-slate-400 font-sans leading-relaxed">
+                      Tiap blok ber-padding $M$ dipangkatkan eksponen publik $e = 65537$ modulo $n$ untuk menghasilkan nilai ciphertext integer $C$.
+                    </p>
+                    <div className="flex items-center justify-between bg-purple-950/30 border border-purple-700/30 p-2.5 rounded-lg">
+                      <span className="text-purple-300 text-[11px] font-bold">Rumus: C_i = (M_padded)^e mod n</span>
+                      <span className="text-[10px] text-purple-400 font-mono bg-purple-900/40 px-2 py-0.5 rounded border border-purple-600/40">e = 65537</span>
+                    </div>
+                  </div>
+
+                  {/* Langkah 4 */}
+                  <div className="bg-slate-900/90 border border-slate-800 rounded-xl p-3.5 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="px-2 py-0.5 rounded bg-purple-500/20 text-purple-300 font-bold text-[11px] border border-purple-500/30">
+                        Langkah 4
+                      </span>
+                      <span className="text-slate-400 text-[10px]">Assembly & Encoding</span>
+                    </div>
+                    <p className="text-slate-200 font-bold text-xs">Pengemasan Payload JSON Base64</p>
+                    <p className="text-[10px] text-slate-400 font-sans leading-relaxed">
+                      Seluruh ciphertext chunk dikemas ke dalam payload JSON standar <span className="font-mono text-purple-300">RSA-OAEP-2048</span> lalu di-encode menjadi string Base64 yang ringkas.
+                    </p>
+                  </div>
+
+                  {/* Tracing Matematika Detail */}
+                  <div className="space-y-3 pt-2">
+                    <div className="text-[11px] font-bold text-slate-300 flex items-center gap-1.5">
                       <TableIcon className="w-3.5 h-3.5 text-purple-400" /> Tracing Matematika per Blok
                     </div>
                     {encryptionResult.chunkTraces.map((trace) => (
                       <div key={trace.chunkIndex} className="bg-slate-900/60 border border-slate-800 rounded-xl p-3 space-y-2">
                         <div className="flex items-center justify-between text-purple-400/80 text-[10px] font-bold border-b border-slate-800/80 pb-2">
-                          <span className="text-purple-300">Blok {trace.chunkIndex}</span>
+                          <span className="text-purple-300">Blok #{trace.chunkIndex} ({trace.plainByteLength} Byte)</span>
+                          <span className="text-slate-500 text-[9px]">{trace.cipherLengthBytes} Byte Cipher</span>
                         </div>
 
-                        <div className="space-y-3 text-[9px] font-mono">
-                          <div className="bg-slate-950/80 p-2 rounded border border-purple-900/50">
-                            <span className="text-purple-400 block mb-1">M (Plaintext Integer sebelum padding):</span>
-                            <p className="text-slate-400 block mb-2 break-all max-h-24 overflow-y-auto custom-scrollbar">{trace.mathTrace?.mInteger}</p>
-                          </div>
-
-                          <div className="flex justify-center my-3">
-                            <div className="bg-slate-800 text-slate-400 px-2 py-0.5 rounded text-[9px]">↓ + OAEP Padding ↓</div>
+                        <div className="space-y-2 text-[9px] font-mono">
+                          <div className="bg-slate-950/80 p-2 rounded border border-slate-800">
+                            <span className="text-slate-500 block mb-1">Plaintext M (Integer Hex):</span>
+                            <p className="text-slate-300 font-bold break-all max-h-16 overflow-y-auto custom-scrollbar">{trace.mathTrace?.mInteger}</p>
                           </div>
 
                           <div className="bg-slate-950/80 p-2 rounded border border-purple-900/50">
-                            <span className="text-purple-400 block mb-1">C (Ciphertext Integer) = (M_padded)^e mod n:</span>
-                            <p className="text-slate-400 font-bold break-all max-h-24 overflow-y-auto custom-scrollbar">{trace.mathTrace?.cInteger}</p>
+                            <span className="text-purple-400 block mb-1">C = (M_padded)^65537 mod n (Integer):</span>
+                            <p className="text-purple-300 font-bold break-all max-h-16 overflow-y-auto custom-scrollbar">{trace.mathTrace?.cInteger}</p>
                           </div>
 
                           <div className="bg-slate-950/80 p-2 rounded border border-slate-800/80 flex items-center justify-between">
-                            <span className="text-slate-500">Hasil C (Base64):</span>
-                            <span className="text-slate-400 truncate max-w-[200px]" title={trace.cipherBase64}>{trace.cipherBase64}</span>
+                            <span className="text-slate-500">Hasil Blok Base64:</span>
+                            <span className="text-slate-300 truncate max-w-[200px]" title={trace.cipherBase64}>{trace.cipherBase64}</span>
                           </div>
                         </div>
                       </div>
@@ -447,11 +499,11 @@ export default function RsaPage() {
               </div>
             </div>
 
-            <div className="bg-slate-950/80 border border-slate-800 rounded-2xl p-4 space-y-3">
-              <div className="flex items-center justify-between">
+            <div className="bg-slate-950/90 border border-purple-500/30 rounded-2xl p-4 space-y-3 shadow-xl">
+              <div className="flex items-center justify-between pb-2 border-b border-slate-800">
                 <div className="flex items-center gap-2">
-                  <TableIcon className="w-4 h-4 text-purple-400" />
-                  <h3 className="text-xs font-bold text-slate-200">Detail Proses Dekripsi</h3>
+                  <UnlockKeyhole className="w-4 h-4 text-purple-400" />
+                  <h3 className="text-xs font-bold text-slate-200">Alur Proses Dekripsi RSA-OAEP 2048</h3>
                 </div>
                 <button
                   onClick={() => setShowDetails(!showDetails)}
@@ -462,50 +514,90 @@ export default function RsaPage() {
               </div>
 
               {showDetails && (
-                <div className="space-y-4 pt-1">
+                <div className="space-y-3 font-mono text-xs pt-1">
 
-                  <div className="space-y-2">
-                    <ProcessStep
-                      index={1}
-                      title="Parsing Base64 & Kunci Privat"
-                      description={`Payload Base64 diurai menjadi ${decryptSteps.chunksCount} blok ciphertext, lalu dicocokkan dengan kunci privat yang dimasukkan.`}
-                    />
-                    <ProcessStep
-                      index={2}
-                      title="Modular Exponentiation (CRT)"
-                      description={
-                        <>
-                          <p className="text-slate-400">
-                            Menghitung perpangkatan modular menggunakan kunci publik untuk menghasilkan nilai ciphertext integer <br />
-                            <br />
-                            Penerapan <span className="text-slate-300 font-medium">Chinese Remainder Theorem</span> untuk mempercepat kalkulasi :
-                          </p>
-                          <span className="text-purple-300 font-bold bg-slate-950 px-1 py- rounded inline-block border border-purple-500/30">
-                            M = C^d mod n
-                          </span>
-                        </>
-                      }
-                    />
-                    <ProcessStep
-                      index={3}
-                      title="OAEP Unpadding & Validasi"
-                      description="Struktur 0x00, lHash, dan byte separator 0x01 diverifikasi pada tiap blok sebelum digabung menjadi plaintext."
-                    />
+                  {/* Langkah 1 */}
+                  <div className="bg-slate-900/90 border border-slate-800 rounded-xl p-3.5 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="px-2 py-0.5 rounded bg-purple-500/20 text-purple-300 font-bold text-[11px] border border-purple-500/30">
+                        Langkah 1
+                      </span>
+                      <span className="text-slate-400 text-[10px]">Payload Parsing</span>
+                    </div>
+                    <p className="text-slate-200 font-bold text-xs">Dekode Base64 & Pemisahan Blok</p>
+                    <p className="text-[10px] text-slate-400 font-sans leading-relaxed">
+                      String Base64 di-decode menjadi objek payload JSON untuk mengekstrak {decryptSteps.chunksCount} blok ciphertext biner masing-masing 256 byte.
+                    </p>
+                    <div className="grid grid-cols-2 gap-1.5 text-[10px] pt-1">
+                      <div className="bg-slate-950 p-2 rounded-lg border border-slate-800 text-center">
+                        <span className="text-slate-500 block text-[9px]">Input Payload</span>
+                        <span className="text-purple-300 font-bold">{decryptSteps.inputLength} Karakter</span>
+                      </div>
+                      <div className="bg-slate-950 p-2 rounded-lg border border-slate-800 text-center">
+                        <span className="text-slate-500 block text-[9px]">Jumlah Blok Chunk</span>
+                        <span className="text-slate-200 font-bold">{decryptSteps.chunksCount} Blok</span>
+                      </div>
+                    </div>
                   </div>
 
-                  <div className="space-y-3">
-                    <div className="text-[11px] font-bold text-slate-300 mb-1 flex items-center gap-1.5">
-                      <TableIcon className="w-3.5 h-3.5 text-purple-400" /> Detail Per Blok
+                  {/* Langkah 2 */}
+                  <div className="bg-slate-900/90 border border-purple-700/40 rounded-xl p-3.5 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="px-2 py-0.5 rounded bg-purple-500/20 text-purple-300 font-bold text-[11px] border border-purple-500/30">
+                        Langkah 2
+                      </span>
+                      <span className="text-purple-400 text-[10px] font-bold">Modular Inversion</span>
                     </div>
-                    {decryptionResult.traces.length > 0 ? (
-                      decryptionResult.traces.map((trace) => (
-                        <DecryptBlockTrace key={trace.chunkIndex} chunkIndex={trace.chunkIndex} status={trace.status} />
-                      ))
-                    ) : (
-                      <p className="text-[10px] text-slate-500 italic">
-                        Tidak ada data tracing per blok yang dikembalikan oleh decryptRsa().
-                      </p>
-                    )}
+                    <p className="text-slate-200 font-bold text-xs">Eksponensial Modular Kunci Privat (CRT)</p>
+                    <p className="text-[10px] text-slate-400 font-sans leading-relaxed">
+                      Menghitung nilai plaintext ber-padding dengan memangkatkan tiap blok terhadap eksponen privat $d$ modulo $n$ dengan akselerasi Chinese Remainder Theorem.
+                    </p>
+                    <div className="flex items-center justify-between bg-purple-950/30 border border-purple-700/30 p-2.5 rounded-lg">
+                      <span className="text-purple-300 text-[11px] font-bold">Rumus: M_padded = C^d mod n</span>
+                      <span className="text-[10px] text-purple-400 font-mono">Modulus 2048-bit</span>
+                    </div>
+                  </div>
+
+                  {/* Langkah 3 */}
+                  <div className="bg-slate-900/90 border border-slate-800 rounded-xl p-3.5 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="px-2 py-0.5 rounded bg-purple-500/20 text-purple-300 font-bold text-[11px] border border-purple-500/30">
+                        Langkah 3
+                      </span>
+                      <span className="text-slate-400 text-[10px]">OAEP Unpadding</span>
+                    </div>
+                    <p className="text-slate-200 font-bold text-xs">Verifikasi Masking & Ekstraksi Plaintext</p>
+                    <p className="text-[10px] text-slate-400 font-sans leading-relaxed">
+                      Memulihkan *seed* acak dan *Data Block (DB)* melalui pembalikan fungsi MGF1 SHA-256, lalu memverifikasi header byte 0x00 serta pemisah 0x01.
+                    </p>
+                    <div className="flex items-center gap-2 bg-purple-950/20 border border-purple-700/30 p-2.5 rounded-lg">
+                      <CheckCircle2 className="w-4 h-4 text-purple-400 shrink-0" />
+                      <span className="text-purple-300 text-[11px]">Integritas OAEP valid pada semua blok. Tidak ada anomali padding.</span>
+                    </div>
+                  </div>
+
+                  {/* Langkah 4 */}
+                  <div className="bg-slate-900/90 border border-slate-800 rounded-xl p-3.5 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="px-2 py-0.5 rounded bg-purple-500/20 text-purple-300 font-bold text-[11px] border border-purple-500/30">
+                        Langkah 4
+                      </span>
+                      <span className="text-slate-400 text-[10px]">Plaintext Recovery</span>
+                    </div>
+                    <p className="text-slate-200 font-bold text-xs">Rekonstruksi & Penggabungan Teks Asli</p>
+                    <p className="text-[10px] text-slate-400 font-sans leading-relaxed">
+                      Menggabungkan seluruh array byte dari tiap blok dan mendekodenya kembali ke karakter UTF-8 seutuhnya.
+                    </p>
+                  </div>
+
+                  {/* Detail Per Blok */}
+                  <div className="space-y-2 pt-2">
+                    <div className="text-[11px] font-bold text-slate-300 mb-1 flex items-center gap-1.5">
+                      <TableIcon className="w-3.5 h-3.5 text-purple-400" /> Hasil Validasi Per Blok
+                    </div>
+                    {decryptionResult.traces.map((trace) => (
+                      <DecryptBlockTrace key={trace.chunkIndex} chunkIndex={trace.chunkIndex} status={trace.status} />
+                    ))}
                   </div>
 
                 </div>
