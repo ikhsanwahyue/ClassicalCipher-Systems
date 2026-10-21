@@ -59,7 +59,7 @@ export default function VigenerePage() {
               : 'text-slate-400 hover:text-slate-200'
               }`}
           >
-            <Sparkles className="w-3.5 h-3.5" />
+            
             Enkripsi
           </button>
           <button
@@ -116,7 +116,7 @@ export default function VigenerePage() {
           onClick={handleProcess}
           className="w-full py-3 bg-gradient-to-r from-cyan-500 to-sky-500 hover:from-cyan-400 hover:to-sky-400 text-slate-950 font-bold text-sm rounded-xl shadow-lg shadow-cyan-500/20 transition-all flex items-center justify-center gap-2 active:scale-[0.99]"
         >
-          <Sparkles className="w-4 h-4" />
+          
           {mode === 'encrypt' ? 'Jalankan Enkripsi' : 'Jalankan Dekripsi'}
         </button>
 

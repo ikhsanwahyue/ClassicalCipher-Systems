@@ -92,7 +92,6 @@ export default function RailFencePage() {
                 : 'text-slate-400 hover:text-slate-200'
             }`}
           >
-            <Sparkles className="w-3.5 h-3.5" />
             Enkripsi
           </button>
           <button

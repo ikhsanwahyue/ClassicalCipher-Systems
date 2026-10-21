@@ -156,7 +156,7 @@ export default function RijndaelPage() {
             onClick={() => { setMode('encrypt'); setResultData(null); setDecryptedText(null); setDecryptSteps(null); setErrorMessage(null); }}
             className={`py-2 text-xs font-semibold rounded-lg transition-all flex items-center justify-center gap-1.5 ${mode === 'encrypt' ? 'bg-blue-500 text-slate-950 shadow-md shadow-blue-500/20' : 'text-slate-400 hover:text-slate-200'}`}
           >
-            <Sparkles className="w-3.5 h-3.5" /> Enkripsi
+            Enkripsi
           </button>
           <button
             onClick={() => { setMode('decrypt'); setResultData(null); setDecryptedText(null); setDecryptSteps(null); setErrorMessage(null); }}

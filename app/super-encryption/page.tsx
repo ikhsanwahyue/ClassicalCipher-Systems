@@ -161,7 +161,7 @@ export default function SuperEncryptionPage() {
                 : 'text-slate-400 hover:text-slate-200'
               }`}
           >
-            <Sparkles className="w-3.5 h-3.5" /> Enkripsi
+            Enkripsi
           </button>
           <button
             onClick={() => {

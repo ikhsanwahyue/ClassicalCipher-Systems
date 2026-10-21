@@ -206,7 +206,7 @@ export default function RsaPage() {
             className={`py-2 text-xs font-semibold rounded-lg transition-all flex items-center justify-center gap-1.5 ${mode === 'encrypt' ? 'bg-purple-500 text-slate-950 shadow-md shadow-purple-500/20' : 'text-slate-400 hover:text-slate-200'
               }`}
           >
-            <Sparkles className="w-3.5 h-3.5" /> Enkripsi
+            Enkripsi
           </button>
           <button
             onClick={() => {
