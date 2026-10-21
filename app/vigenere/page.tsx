@@ -2,29 +2,20 @@
 
 import React, { useState } from 'react';
 import MobileShell from '@/components/MobileShell';
+import CipherResultDisplay from '@/components/CipherResultDisplay';
 import { encryptVigenere, decryptVigenere, VigenereResult } from '@/lib/vigenere';
 import {
-  Key,
-  Copy,
-  Check,
   RefreshCw,
   Sparkles,
   ArrowDownUp,
   Table as TableIcon,
-  HelpCircle,
 } from 'lucide-react';
 
 export default function VigenerePage() {
   const [mode, setMode] = useState<'encrypt' | 'decrypt'>('encrypt');
-
   const [inputText, setInputText] = useState('KRIPTOGRAFI KLASIK POLIALFABETIK');
-
   const [key, setKey] = useState('KUNCI');
-
   const [resultData, setResultData] = useState<VigenereResult | null>(null);
-
-  const [copied, setCopied] = useState(false);
-
   const [showTracing, setShowTracing] = useState(true);
 
   const handleProcess = () => {
@@ -33,14 +24,6 @@ export default function VigenerePage() {
       setResultData(encryptVigenere(inputText, key));
     } else {
       setResultData(decryptVigenere(inputText, key));
-    }
-  };
-
-  const handleCopy = () => {
-    if (resultData?.result) {
-      navigator.clipboard.writeText(resultData.result);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
     }
   };
 
@@ -140,42 +123,13 @@ export default function VigenerePage() {
         {resultData && (
           <div className="space-y-4 pt-2">
 
-            <div className="bg-slate-950 border border-cyan-500/40 rounded-2xl p-4 shadow-xl space-y-3">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-2">
-                  <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse" />
-                  <span className="text-xs font-bold text-slate-200">
-                    Hasil {mode === 'encrypt' ? 'Ciphertext' : 'Plaintext'}
-                  </span>
-                </div>
-                <button
-                  onClick={handleCopy}
-                  className="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium flex items-center gap-1.5 transition-colors border border-slate-700"
-                >
-                  {copied ? (
-                    <>
-                      <Check className="w-3.5 h-3.5 text-emerald-400" />
-                      <span className="text-emerald-400">Tersalin</span>
-                    </>
-                  ) : (
-                    <>
-                      <Copy className="w-3.5 h-3.5 text-slate-400" />
-                      <span>Salin</span>
-                    </>
-                  )}
-                </button>
-              </div>
-
-              <div className="bg-slate-900/90 border border-slate-800 rounded-xl p-3">
-                <p className="text-sm font-mono text-cyan-300 break-all select-all font-semibold">
-                  {resultData.result}
-                </p>
-              </div>
-
-              <div className="text-[11px] text-slate-400 font-mono flex items-center justify-between pt-1 border-t border-slate-800/80">
-                <span className="text-slate-500">{resultData.result.length} Karakter</span>
-              </div>
-            </div>
+            <CipherResultDisplay
+              title={`Hasil ${mode === 'encrypt' ? 'Ciphertext' : 'Plaintext'}`}
+              value={resultData.result}
+              themeColor="cyan"
+              threshold={120}
+              downloadFilename={mode === 'encrypt' ? 'vigenere-ciphertext.txt' : 'vigenere-plaintext.txt'}
+            />
 
             <div className="bg-slate-950/80 border border-slate-800 rounded-2xl p-4 space-y-3">
               <div className="flex items-center justify-between">

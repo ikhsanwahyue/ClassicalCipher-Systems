@@ -91,7 +91,7 @@ export async function superEncryptPipeline(
     category: 'Transposisi Klasik',
     input: s1.result,
     output: s2.result,
-    keyUsed: `Kedalaman Rel (k): ${railsCount}`,
+    keyUsed: `Kedalaman Rel (k): ${s2.rails}`,
     description: `Transposisi geometris dengan menyusun karakter ke dalam pola gelombang zig-zag melintasi ${railsCount} rel, lalu membaca string hasil baris per baris.`,
     metadata: {
       formula: s2.formula,
@@ -202,7 +202,7 @@ export async function superDecryptPipeline(
     category: 'Transposisi Klasik',
     input: s2,
     output: s3.result,
-    keyUsed: `Kedalaman Rel (k): ${railsCount}`,
+    keyUsed: `Kedalaman Rel (k): ${s3.rails}`,
     description: `Menghitung frekuensi slot pada tiap rel matriks zig-zag ${railsCount} rel, menempatkan kembali karakter baris per baris, dan membaca jalur zig-zag untuk memulihkan susunan Vigenère.`,
     metadata: {
       formula: s3.formula,

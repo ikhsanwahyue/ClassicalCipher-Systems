@@ -2,6 +2,8 @@
 
 import React, { useState, useEffect } from 'react';
 import MobileShell from '@/components/MobileShell';
+import CipherResultDisplay from '@/components/CipherResultDisplay';
+import { getSafeRailsBound } from '@/lib/rail-fence';
 import {
   superEncryptPipeline,
   superDecryptPipeline,
@@ -17,6 +19,7 @@ import {
   Sparkles,
   ArrowDownUp,
   Key,
+  Shield,
   ShieldCheck,
   Cpu,
   Info,
@@ -40,8 +43,16 @@ export default function SuperEncryptionPage() {
 
   const [finalResult, setFinalResult] = useState<string | null>(null);
   const [stages, setStages] = useState<PipelineStageInfo[]>([]);
-  const [copied, setCopied] = useState(false);
   const [showDetails, setShowDetails] = useState(true);
+  const [copiedKey, setCopiedKey] = useState<'pub' | 'priv' | null>(null);
+  const [showRsaKeys, setShowRsaKeys] = useState(true);
+
+  const handleCopyKey = (text: string, type: 'pub' | 'priv') => {
+    if (!text) return;
+    navigator.clipboard.writeText(text);
+    setCopiedKey(type);
+    setTimeout(() => setCopiedKey(null), 2000);
+  };
   const [expandedStages, setExpandedStages] = useState<{ [key: number]: boolean }>({
     1: false,
     2: false,
@@ -49,20 +60,21 @@ export default function SuperEncryptionPage() {
     4: true,
   });
 
-  useEffect(() => {
-    handleGenerateAllKeys();
-  }, []);
-
   const handleGenerateAllKeys = async () => {
     setIsGeneratingRsa(true);
     try {
       const pair = await generateRsaKeyPair();
       setRsaKeys(pair);
-    } catch (e) {
+    } catch {
+      // ignore
     } finally {
       setIsGeneratingRsa(false);
     }
   };
+
+  useEffect(() => {
+    handleGenerateAllKeys();
+  }, []);
 
   const toggleStageExpand = (stageNum: number) => {
     setExpandedStages((prev) => ({
@@ -110,14 +122,6 @@ export default function SuperEncryptionPage() {
       }
     } finally {
       setIsProcessing(false);
-    }
-  };
-
-  const handleCopy = () => {
-    if (finalResult) {
-      navigator.clipboard.writeText(finalResult);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
     }
   };
 
@@ -204,15 +208,25 @@ export default function SuperEncryptionPage() {
               </div>
 
               {/* 2. Kedalaman Rel Rail Fence */}
-              <div className="space-y-2">
-                <span className="text-amber-400 font-semibold text-[11px] block">2. Kedalaman Rel Rail Fence (k):</span>
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <span className="text-amber-400 font-semibold text-[11px] block">2. Kedalaman Rel Rail Fence (k):</span>
+                  <span className="text-[10px] text-slate-400 font-mono">
+                    Maks: {getSafeRailsBound(inputText.trim().length).max} rel
+                  </span>
+                </div>
                 <input
                   type="number"
-                  min="2"
-                  max="10"
-                  value={railFenceRails}
-                  onChange={(e) => setRailFenceRails(Math.max(2, parseInt(e.target.value, 10) || 2))}
-                  className="w-full bg-slate-900 border border-slate-800 rounded-lg px-2.5 py-1.5 text-slate-200 focus:outline-none focus:border-amber-400 transition-colors"
+                  min={getSafeRailsBound(inputText.trim().length).min}
+                  max={getSafeRailsBound(inputText.trim().length).max}
+                  value={Math.min(railFenceRails, getSafeRailsBound(inputText.trim().length).max)}
+                  onChange={(e) => {
+                    const bounds = getSafeRailsBound(inputText.trim().length);
+                    const val = parseInt(e.target.value, 10);
+                    if (isNaN(val)) return;
+                    setRailFenceRails(Math.min(Math.max(bounds.min, val), bounds.max));
+                  }}
+                  className="w-full bg-slate-900 border border-slate-800 rounded-lg px-2.5 py-1.5 text-slate-200 focus:outline-none focus:border-amber-400 transition-colors text-xs font-mono"
                 />
               </div>
 
@@ -227,15 +241,117 @@ export default function SuperEncryptionPage() {
                 />
               </div>
 
-              {/* 4. Pasangan Kunci RSA */}
-              <div className="p-2.5 bg-amber-950/20 border border-amber-500/30 rounded-xl flex items-center justify-between">
-                <span className="text-amber-300 text-[11px] font-semibold flex items-center gap-1.5">
-                  <ShieldCheck className="w-3.5 h-3.5 text-amber-400" />
-                  4. Pasangan Kunci RSA (2048 bit):
-                </span>
-                <span className="text-[10px] text-amber-400 bg-amber-500/10 border border-amber-500/30 px-2 py-0.5 rounded-md font-bold">
-                  ✓ Siap (OAEP)
-                </span>
+              {/* 4. Pasangan Kunci RSA (Public Key & Private Key Display & Copy) */}
+              <div className="space-y-2.5 pt-2 border-t border-slate-800/80">
+                <div className="flex items-center justify-between">
+                  <span className="text-amber-400 font-semibold text-[11px] flex items-center gap-1.5">
+                    <ShieldCheck className="w-3.5 h-3.5" />
+                    4. Pasangan Kunci RSA (2048-bit OAEP):
+                  </span>
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setShowRsaKeys(!showRsaKeys)}
+                      className="text-[10.5px] text-slate-400 hover:text-amber-300 transition-colors underline font-medium"
+                    >
+                      {showRsaKeys ? 'Sembunyikan Kunci' : 'Tampilkan Kunci'}
+                    </button>
+                    <span className="text-[10px] text-amber-400 bg-amber-500/10 border border-amber-500/30 px-2 py-0.5 rounded-md font-bold flex items-center gap-1">
+                      <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
+                      Siap (OAEP)
+                    </span>
+                  </div>
+                </div>
+
+                {showRsaKeys && (
+                  <div className="space-y-3 pt-1">
+                    {/* Kunci Publik RSA */}
+                    <div className="space-y-1.5 bg-slate-900/70 border border-slate-800 rounded-xl p-2.5">
+                      <div className="flex items-center justify-between text-[11px]">
+                        <span className="font-semibold text-amber-300 flex items-center gap-1.5">
+                          <Shield className="w-3.5 h-3.5 text-amber-400" />
+                          <span>Kunci Publik</span>
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => handleCopyKey(rsaKeys?.publicKeyPem || '', 'pub')}
+                          disabled={!rsaKeys?.publicKeyPem}
+                          className="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-[10.5px] font-semibold flex items-center gap-1 transition-colors border border-slate-700 active:scale-95 disabled:opacity-50"
+                        >
+                          {copiedKey === 'pub' ? (
+                            <>
+                              <Check className="w-3 h-3 text-emerald-400" />
+                              <span className="text-emerald-400 font-bold">Tersalin</span>
+                            </>
+                          ) : (
+                            <>
+                              <Copy className="w-3 h-3 text-slate-400" />
+                              <span>Salin</span>
+                            </>
+                          )}
+                        </button>
+                      </div>
+                      <textarea
+                        value={rsaKeys?.publicKeyPem || ''}
+                        onChange={(e) =>
+                          setRsaKeys((prev) => ({
+                            publicKeyPem: e.target.value,
+                            privateKeyPem: prev?.privateKeyPem || '',
+                          }))
+                        }
+                        rows={4}
+                        placeholder="-----BEGIN PUBLIC KEY-----"
+                        className="w-full bg-slate-950 border border-slate-800 rounded-lg p-2 text-[9.5px] font-mono text-slate-300 focus:outline-none focus:border-amber-400 leading-tight custom-scrollbar"
+                      />
+                      <span className="text-[9.5px] text-slate-500 block font-mono">
+                        Kunci publik dipakai untuk mengenkripsi ciphertext AES pada tahap akhir super enkripsi.
+                      </span>
+                    </div>
+
+                    {/* Kunci Privat RSA */}
+                    <div className="space-y-1.5 bg-slate-900/70 border border-slate-800 rounded-xl p-2.5">
+                      <div className="flex items-center justify-between text-[11px]">
+                        <span className="font-semibold text-rose-300 flex items-center gap-1.5">
+                          <Key className="w-3.5 h-3.5 text-rose-400" />
+                          <span>Kunci Privat</span>
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => handleCopyKey(rsaKeys?.privateKeyPem || '', 'priv')}
+                          disabled={!rsaKeys?.privateKeyPem}
+                          className="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-[10.5px] font-semibold flex items-center gap-1 transition-colors border border-slate-700 active:scale-95 disabled:opacity-50"
+                        >
+                          {copiedKey === 'priv' ? (
+                            <>
+                              <Check className="w-3 h-3 text-emerald-400" />
+                              <span className="text-emerald-400 font-bold">Tersalin</span>
+                            </>
+                          ) : (
+                            <>
+                              <Copy className="w-3 h-3 text-slate-400" />
+                              <span>Salin</span>
+                            </>
+                          )}
+                        </button>
+                      </div>
+                      <textarea
+                        value={rsaKeys?.privateKeyPem || ''}
+                        onChange={(e) =>
+                          setRsaKeys((prev) => ({
+                            publicKeyPem: prev?.publicKeyPem || '',
+                            privateKeyPem: e.target.value,
+                          }))
+                        }
+                        rows={4}
+                        placeholder="-----BEGIN PRIVATE KEY-----"
+                        className="w-full bg-slate-950 border border-slate-800 rounded-lg p-2 text-[9.5px] font-mono text-slate-300 focus:outline-none focus:border-rose-400 leading-tight custom-scrollbar"
+                      />
+                      <span className="text-[9.5px] text-slate-500 block font-mono">
+                        Kunci privat mutlak dibutuhkan untuk membuka proteksi tahap pertama saat proses dekripsi.
+                      </span>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -278,35 +394,19 @@ export default function SuperEncryptionPage() {
         {finalResult && (
           <div className="space-y-4 pt-2">
 
-            {/* Output Card */}
-            <div className="bg-slate-950 border border-amber-500/40 rounded-2xl p-4 shadow-xl space-y-3">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-2">
-                  <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
-                  <span className="text-xs font-bold text-slate-200">
-                    Hasil Akhir {mode === 'encrypt' ? 'Super Ciphertext' : 'Plaintext Terpulihkan'}
-                  </span>
+            <CipherResultDisplay
+              title={`Hasil Akhir ${mode === 'encrypt' ? 'Super Ciphertext' : 'Plaintext Terpulihkan'}`}
+              value={finalResult}
+              themeColor="amber"
+              threshold={120}
+              downloadFilename={mode === 'encrypt' ? 'super-ciphertext.txt' : 'super-plaintext.txt'}
+              subInfo={
+                <div className="text-[11px] text-slate-400 font-mono flex items-center justify-between pt-1 border-t border-slate-800/80">
+                  <span>{finalResult.length} Karakter</span>
+                  <span>{stages.length} Lapisan Dilalui</span>
                 </div>
-                <button
-                  onClick={handleCopy}
-                  className="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium flex items-center gap-1.5 transition-colors border border-slate-700"
-                >
-                  {copied ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5 text-slate-400" />}
-                  <span>Salin Hasil</span>
-                </button>
-              </div>
-
-              <div className="bg-slate-900/90 border border-slate-800 rounded-xl p-3">
-                <p className="text-xs font-mono text-amber-300 break-all select-all font-semibold leading-relaxed">
-                  {finalResult}
-                </p>
-              </div>
-
-              <div className="text-[11px] text-slate-400 font-mono flex items-center justify-between pt-1 border-t border-slate-800/80">
-                <span>{finalResult.length} Karakter</span>
-                <span>{stages.length} Lapisan Dilalui</span>
-              </div>
-            </div>
+              }
+            />
 
             {/* Container Detail Tracing */}
             <div className="bg-slate-950/80 border border-slate-800 rounded-2xl p-4 space-y-3">

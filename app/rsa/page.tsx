@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import MobileShell from '@/components/MobileShell';
+import CipherResultDisplay from '@/components/CipherResultDisplay';
 import {
   generateRsaKeyPair,
   encryptRsa,
@@ -313,30 +314,19 @@ export default function RsaPage() {
         {encryptionResult && (
           <div className="space-y-4 pt-2">
 
-            <div className="bg-slate-950 border border-purple-500/40 rounded-2xl p-4 shadow-xl space-y-3">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-2">
-                  <span className="w-2 h-2 rounded-full bg-purple-400 animate-pulse" />
-                  <span className="text-xs font-bold text-slate-200">Hasil Ciphertext RSA-OAEP</span>
+            <CipherResultDisplay
+              title="Hasil Ciphertext RSA-OAEP"
+              value={encryptionResult.ciphertextBase64}
+              themeColor="purple"
+              threshold={120}
+              downloadFilename="rsa-ciphertext-payload.txt"
+              subInfo={
+                <div className="text-[11px] text-slate-400 font-mono flex items-center justify-between pt-1 border-t border-slate-800/80">
+                  <span>{encryptionResult.chunksCount} Blok Chunk</span>
+                  <span>Modulus: 2048-bit (256 Byte/Blok)</span>
                 </div>
-                <button
-                  onClick={() => handleCopyText(encryptionResult.ciphertextBase64, 'res')}
-                  className="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium flex items-center gap-1.5 transition-colors border border-slate-700"
-                >
-                  {copiedKey === 'res' ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5 text-slate-400" />}
-                  <span>Salin Payload</span>
-                </button>
-              </div>
-              <div className="bg-slate-900/90 border border-slate-800 rounded-xl p-3">
-                <p className="text-xs font-mono text-purple-300 break-all select-all font-semibold leading-relaxed">
-                  {encryptionResult.ciphertextBase64}
-                </p>
-              </div>
-              <div className="text-[11px] text-slate-400 font-mono flex items-center justify-between pt-1 border-t border-slate-800/80">
-                <span>{encryptionResult.chunksCount} Blok Chunk</span>
-                <span>Modulus: 2048-bit (256 Byte/Blok)</span>
-              </div>
-            </div>
+              }
+            />
 
             <div className="bg-slate-950/90 border border-purple-500/30 rounded-2xl p-4 space-y-3 shadow-xl">
               <div className="flex items-center justify-between pb-2 border-b border-slate-800">
@@ -474,30 +464,19 @@ export default function RsaPage() {
         {decryptionResult && decryptSteps && (
           <div className="space-y-4 pt-2">
 
-            <div className="bg-slate-950 border border-purple-500/40 rounded-2xl p-4 shadow-xl space-y-3">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-2">
-                  <span className="w-2 h-2 rounded-full bg-purple-400 animate-pulse" />
-                  <span className="text-xs font-bold text-slate-200">Plaintext Terpulihkan</span>
+            <CipherResultDisplay
+              title="Plaintext Terpulihkan"
+              value={decryptionResult.plaintext}
+              themeColor="purple"
+              threshold={120}
+              downloadFilename="rsa-decrypted-plaintext.txt"
+              subInfo={
+                <div className="text-[11px] text-slate-400 font-mono flex items-center justify-between pt-1 border-t border-slate-800/80">
+                  <span>{decryptionResult.plaintext.length} Karakter</span>
+                  <span>{decryptSteps.chunksCount} Blok Chunk</span>
                 </div>
-                <button
-                  onClick={() => handleCopyText(decryptionResult.plaintext, 'res')}
-                  className="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium flex items-center gap-1.5 transition-colors border border-slate-700"
-                >
-                  {copiedKey === 'res' ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5 text-slate-400" />}
-                  <span>Salin</span>
-                </button>
-              </div>
-              <div className="bg-slate-900/90 border border-slate-800 rounded-xl p-3">
-                <p className="text-sm font-mono text-purple-300 break-all select-all font-semibold">
-                  {decryptionResult.plaintext}
-                </p>
-              </div>
-              <div className="text-[11px] text-slate-400 font-mono flex items-center justify-between pt-1 border-t border-slate-800/80">
-                <span>{decryptionResult.plaintext.length} Karakter</span>
-                <span>{decryptSteps.chunksCount} Blok Chunk</span>
-              </div>
-            </div>
+              }
+            />
 
             <div className="bg-slate-950/90 border border-purple-500/30 rounded-2xl p-4 space-y-3 shadow-xl">
               <div className="flex items-center justify-between pb-2 border-b border-slate-800">
